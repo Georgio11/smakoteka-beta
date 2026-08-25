@@ -3,6 +3,9 @@ import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
+  /* Сайт живе в підтеці github.io/smakoteka-beta, тому всі шляхи —
+   * і скрипти, і бандли міст — мусять будуватись від неї. */
+  base: '/smakoteka-beta/',
   plugins: [vue()],
   resolve: {
     alias: {
