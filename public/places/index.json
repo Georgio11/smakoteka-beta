@@ -1,0 +1,56 @@
+{
+  "bundles": [
+    {
+      "id": "dnipro",
+      "file": "places-dnipro.json",
+      "bbox": [
+        48.35,
+        34.85,
+        48.55,
+        35.15
+      ],
+      "count": 684,
+      "version": "1bc1cea6",
+      "updatedAt": "2026-08-25"
+    },
+    {
+      "id": "kharkiv",
+      "file": "places-kharkiv.json",
+      "bbox": [
+        49.9,
+        36.1,
+        50.1,
+        36.45
+      ],
+      "count": 1306,
+      "version": "0d8ed423",
+      "updatedAt": "2026-08-25"
+    },
+    {
+      "id": "kyiv",
+      "file": "places-kyiv.json",
+      "bbox": [
+        50.33,
+        30.35,
+        50.55,
+        30.72
+      ],
+      "count": 4159,
+      "version": "5138417e",
+      "updatedAt": "2026-08-25"
+    },
+    {
+      "id": "lviv",
+      "file": "places-lviv.json",
+      "bbox": [
+        49.76,
+        23.9,
+        49.9,
+        24.13
+      ],
+      "count": 1443,
+      "version": "887c3090",
+      "updatedAt": "2026-08-25"
+    }
+  ]
+}

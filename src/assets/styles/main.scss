@@ -1,0 +1,237 @@
+:root {
+  --ink: #14161a;
+  --ink-2: #5c6169;
+  --ink-3: #8f949b;
+  --paper: #f4f4f2;
+  --card: #ffffff;
+  --line: #e3e3df;
+  --line-2: #cfcfc9;
+  --plum: #6b2d4e;
+  --plum-bg: #f6ecf1;
+  --sage: #5d7a63;
+  --kind-cafe: #f5a300;
+  --kind-restaurant: #d32f28;
+  --kind-bar: #2563eb;
+  --kind-pub: #0aa63d;
+  --kind-fast_food: #c2189c;
+
+  --r: 10px;
+  --r-lg: 16px;
+
+  --pad: 18px;
+  --gap: 8px;
+  --gap-lg: 14px;
+
+  --tabs-h: 56px;
+  --panel-w: 400px;
+  --control-h: 44px;
+
+  --z-map: 1;
+  --z-ui: 10;
+  --z-panel: 20;
+  --z-toast: 30;
+
+  --dur: 0.28s;
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+body {
+  font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+h1, h2, h3, p {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+button {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul, ol {
+  list-style: none;
+  padding: 0;
+}
+
+img, svg {
+  display: block;
+  max-width: 100%;
+}
+
+textarea {
+  resize: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--plum);
+  outline-offset: 2px;
+}
+
+/* ---------- Leaflet ---------- */
+
+.leaflet-marker-icon:hover {
+  z-index: 10000 !important;
+}
+
+.leaflet-container {
+  background: #eceae5;
+  font-family: inherit;
+}
+
+.leaflet-control-attribution {
+  font-size: 10px;
+  background: rgb(255 255 255 / 70%);
+}
+
+.user-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #2f7bd6;
+  border: 2.5px solid #fff;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 15%);
+}
+
+.poi-dot {
+  display: flex;
+  align-items: center;
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 20%),
+    1px 2px 4px rgb(0 0 0 / 22%);
+  line-height: 1;
+  width: fit-content;
+  padding: 2px;
+  border-radius: 999px;
+  background: #fff;
+  transition: box-shadow 140ms ease;
+
+  .poi-dot__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--ink-3);
+    color: #fff;
+    font-size: 13px;
+  }
+
+  .poi-dot__name {
+    max-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    opacity: 0;
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 600;
+    transition: max-width 140ms ease, opacity 140ms ease;
+  }
+
+  &--cafe {
+    .poi-dot__icon {
+      background: var(--kind-cafe);
+    }
+  }
+
+  &--restaurant {
+    .poi-dot__icon {
+      background: var(--kind-restaurant);
+    }
+  }
+
+  &--bar {
+    .poi-dot__icon {
+      background: var(--kind-bar);
+    }
+  }
+
+  &--pub {
+    .poi-dot__icon {
+      background: var(--kind-pub);
+    }
+  }
+
+  &--fast_food {
+    .poi-dot__icon {
+      background: var(--kind-fast_food);
+    }
+  }
+
+  &:hover {
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 18%),
+      2px 4px 10px rgb(0 0 0 / 26%);
+  }
+
+  &:hover .poi-dot__name {
+    max-width: 300px;
+    opacity: 1;
+    padding: 0 10px 0 6px;
+  }
+}
+
+
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.cluster-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #3e4552;
+  color: #fff;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 6px rgb(0 0 0 / 30%);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
