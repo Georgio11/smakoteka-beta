@@ -9,11 +9,14 @@
     "preview": "vite preview",
     "fetch:places": "node scripts/fetch-places.js",
     "resolve:places": "node scripts/resolve-place-ids.js",
-    "sync:overture": "node scripts/sync-overture.js"
+    "sync:overture": "node scripts/sync-overture.js",
+    "build:style": "node scripts/build-map-style.js"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.3.1",
+    "@maplibre/maplibre-gl-leaflet": "^0.1.4",
     "leaflet": "^1.9.4",
+    "maplibre-gl": "^5.24.0",
     "vue": "^3.5.40",
     "vue-router": "^5.2.0"
   },

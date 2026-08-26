@@ -14,20 +14,15 @@ export function loadManifest() {
     return manifestPromise
 }
 
-export async function coverage() {
+export async function listCities() {
     const { bundles } = await loadManifest()
 
-    if (!bundles.length) return null
+    return bundles.map(({ id, title }) => ({ id, title }))
+}
 
-    return bundles.reduce(
-        (box, { bbox: [south, west, north, east] }) => ({
-            south: Math.min(box.south, south),
-            west: Math.min(box.west, west),
-            north: Math.max(box.north, north),
-            east: Math.max(box.east, east),
-        }),
-        { south: 90, west: 180, north: -90, east: -180 },
-    )
+export async function boxOf(id) {
+    const { bundles } = await loadManifest()
+    return bundles.find((bundle) => bundle.id === id)?.bbox ?? null
 }
 
 export async function tilesOf(key, signal) {

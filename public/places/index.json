@@ -1,33 +1,8 @@
 {
   "bundles": [
     {
-      "id": "dnipro",
-      "file": "places-dnipro.json",
-      "bbox": [
-        48.35,
-        34.85,
-        48.55,
-        35.15
-      ],
-      "count": 684,
-      "version": "d2a402e4",
-      "updatedAt": "2026-08-26"
-    },
-    {
-      "id": "kharkiv",
-      "file": "places-kharkiv.json",
-      "bbox": [
-        49.9,
-        36.1,
-        50.1,
-        36.45
-      ],
-      "count": 1306,
-      "version": "344fbfec",
-      "updatedAt": "2026-08-26"
-    },
-    {
       "id": "kyiv",
+      "title": "Київ",
       "file": "places-kyiv.json",
       "bbox": [
         50.33,
@@ -41,6 +16,7 @@
     },
     {
       "id": "lviv",
+      "title": "Львів",
       "file": "places-lviv.json",
       "bbox": [
         49.76,
@@ -50,6 +26,34 @@
       ],
       "count": 1443,
       "version": "07ed690d",
+      "updatedAt": "2026-08-26"
+    },
+    {
+      "id": "dnipro",
+      "title": "Дніпро",
+      "file": "places-dnipro.json",
+      "bbox": [
+        48.35,
+        34.85,
+        48.55,
+        35.15
+      ],
+      "count": 684,
+      "version": "d2a402e4",
+      "updatedAt": "2026-08-26"
+    },
+    {
+      "id": "kharkiv",
+      "title": "Харків",
+      "file": "places-kharkiv.json",
+      "bbox": [
+        49.9,
+        36.1,
+        50.1,
+        36.45
+      ],
+      "count": 1306,
+      "version": "344fbfec",
       "updatedAt": "2026-08-26"
     }
   ]

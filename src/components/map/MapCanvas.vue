@@ -2,16 +2,22 @@
 import {computed, onMounted, onUnmounted, ref, shallowRef, watch} from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import {maplibreGL} from '@maplibre/maplibre-gl-leaflet'
+import 'maplibre-gl/dist/maplibre-gl.css'
 import {usePlacesNearby} from '@/composables/usePlacesNearby'
+import {useCity} from '@/composables/useCity'
 import {kindLabel, kindMarkerHtml} from '@/components/map/kinds'
 import {escapeHtml} from '@/lib/html'
+import {cityBox} from '@/lib/placesRepo'
 import MapFilters from '@/components/map/MapFilters.vue'
 import Tooltip from '@/components/ui/Tooltip.vue'
+import CityPicker from "@/components/ui/CityPicker.vue";
 
 const FALLBACK_CENTER = [50.4501, 30.5234]
 const DEFAULT_ZOOM = 15
 const LOCATED_ZOOM = 16
 const MIN_ZOOM = 12
+const MAX_ZOOM = 20
 const COVERAGE_PAD = 0.04
 const PAN_SLACK = 0.25
 const MOVE_DEBOUNCE = 250
@@ -27,17 +33,18 @@ const userMarker = shallowRef(null)
 const poiLayer = shallowRef(null)
 const isLocating = ref(false)
 const filters = ref({kinds: [], stepFree: false, unconfirmedOnly: false})
-const isOutsideCoverage = ref(false)
+const isOutsideCity = ref(false)
 const selected = shallowRef(null)
-const coverageBounds = shallowRef(null)
+const cityBounds = shallowRef(null)
 
 const {places, isLoading, error, loadBounds, coverage} = usePlacesNearby()
+const {cityList, city, pickCity} = useCity()
 
 const layers = new Map()
 
 const statusText = computed(() => {
   if (error.value) return error.value
-  if (isOutsideCoverage.value) return 'Ти поза зоною покриття'
+  if (isOutsideCity.value) return 'Ти зараз не в цьому місті'
   if (isLoading.value) return 'Шукаю місця…'
 
   return ''
@@ -75,14 +82,14 @@ function locate() {
       ({coords}) => {
         isLocating.value = false
 
-        const bounds = coverageBounds.value
+        const bounds = cityBounds.value
 
         if (bounds && !bounds.contains([coords.latitude, coords.longitude])) {
-          isOutsideCoverage.value = true
+          isOutsideCity.value = true
           return
         }
 
-        isOutsideCoverage.value = false
+        isOutsideCity.value = false
         showUser(coords.latitude, coords.longitude)
         map.value?.setView([coords.latitude, coords.longitude], LOCATED_ZOOM)
       },
@@ -225,23 +232,26 @@ function zoomToCluster(item) {
 
 /* ---------- coverage ---------- */
 
-async function applyCoverage() {
-  const box = await coverage()
+async function enterCity(id) {
+  const box = await cityBox(id)
 
   if (!box || !map.value) return
 
-  coverageBounds.value = L.latLngBounds([box.south, box.west], [box.north, box.east]).pad(COVERAGE_PAD)
+  const [south, west, north, east] = box
+
+  cityBounds.value = L.latLngBounds([south, west], [north, east]).pad(COVERAGE_PAD)
 
   applyPanBounds()
+  map.value.fitBounds(cityBounds.value)
 
-  if (!coverageBounds.value.contains(map.value.getCenter())) {
-    map.value.fitBounds(coverageBounds.value)
-  }
+  locate()
+  loadPlaces()
 }
+
 
 function applyPanBounds() {
   const instance = map.value
-  const covered = coverageBounds.value
+  const covered = cityBounds.value
 
   if (!instance || !covered) return
 
@@ -282,6 +292,10 @@ function onMapMove() {
 
 watch(places, renderItems)
 watch(filters, renderItems)
+watch(city, (id) => {
+  if (id) enterCity(id)
+})
+
 
 
 /* ---------- lifecycle ---------- */
@@ -291,15 +305,13 @@ onMounted(() => {
     center: FALLBACK_CENTER,
     zoom: DEFAULT_ZOOM,
     minZoom: MIN_ZOOM,
+    maxZoom: MAX_ZOOM,
     maxBoundsViscosity: 1,
     zoomControl: false,
   })
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    subdomains: 'abcd',
-    maxZoom: 20,
-    detectRetina: true,
-    attribution: '© OpenStreetMap contributors © CARTO',
+  maplibreGL({
+    style: `${import.meta.env.BASE_URL}map/style.json`,
   }).addTo(map.value)
 
   poiLayer.value = L.layerGroup().addTo(map.value)
@@ -307,10 +319,6 @@ onMounted(() => {
   map.value.on('moveend', onMapMove)
   map.value.on('zoomend', onMapMove)
   map.value.on('resize', applyPanBounds)
-
-  applyCoverage()
-  locate()
-  loadPlaces()
 })
 
 onUnmounted(() => {
@@ -362,6 +370,8 @@ onUnmounted(() => {
       </a>
       <button class="place-card__close" aria-label="Закрити" @click="selected = null">×</button>
     </div>
+
+    <CityPicker v-if="!city" :cities="cityList" @select="pickCity"/>
   </div>
 </template>
 

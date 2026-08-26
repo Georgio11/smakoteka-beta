@@ -1,5 +1,5 @@
 import { ref, shallowRef } from 'vue'
-import { coverage, loadTile, primeIndex } from '@/lib/placesRepo'
+import { loadTile, primeIndex } from '@/lib/placesRepo'
 import { TILE_ZOOM, tilesForBox } from '@/lib/tiles'
 
 const MAX_TILES_PER_LOAD = 96
@@ -87,7 +87,6 @@ export function usePlacesNearby() {
         isLoading,
         error,
         loadBounds,
-        coverage,
     }
 }
 

@@ -32,8 +32,12 @@ export function primeIndex() {
     return bundles.loadManifest()
 }
 
-export function coverage() {
-    return bundles.coverage()
+export function cities() {
+    return bundles.listCities()
+}
+
+export function cityBox(id) {
+    return bundles.boxOf(id)
 }
 
 async function fromSources(key, signal) {

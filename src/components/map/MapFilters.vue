@@ -61,19 +61,20 @@ function toggleUnconfirmed() {
       </button>
     </Tooltip>
 
-    <Tooltip :text="UNCONFIRMED_TIP" v-slot="{ id }">
-      <button
-          class="chip chip--muted"
-          :class="{ 'is-on': filters.unconfirmedOnly }"
-          :aria-pressed="filters.unconfirmedOnly"
-          :aria-describedby="id"
-          @click="toggleUnconfirmed"
-      >
-        <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
-        <span>Непідтверджені</span>
-      </button>
-    </Tooltip>
-
+    <div class="map-filters__admin">
+      <Tooltip :text="UNCONFIRMED_TIP" v-slot="{ id }">
+        <button
+            class="chip chip--muted"
+            :class="{ 'is-on': filters.unconfirmedOnly }"
+            :aria-pressed="filters.unconfirmedOnly"
+            :aria-describedby="id"
+            @click="toggleUnconfirmed"
+        >
+          <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
+          <span>Непідтверджені</span>
+        </button>
+      </Tooltip>
+    </div>
   </div>
 </template>
 
