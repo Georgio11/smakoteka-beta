@@ -3,7 +3,7 @@ import {computed, onMounted, onUnmounted, ref, shallowRef, watch} from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import {usePlacesNearby} from '@/composables/usePlacesNearby'
-import {kindMarkerHtml} from '@/components/map/kinds'
+import {kindLabel, kindMarkerHtml} from '@/components/map/kinds'
 import {escapeHtml} from '@/lib/html'
 import MapFilters from '@/components/map/MapFilters.vue'
 import Tooltip from '@/components/ui/Tooltip.vue'
@@ -26,7 +26,7 @@ const map = shallowRef(null)
 const userMarker = shallowRef(null)
 const poiLayer = shallowRef(null)
 const isLocating = ref(false)
-const filters = ref({kinds: [], stepFree: false})
+const filters = ref({kinds: [], stepFree: false, unconfirmedOnly: false})
 const isOutsideCoverage = ref(false)
 const selected = shallowRef(null)
 const coverageBounds = shallowRef(null)
@@ -97,9 +97,12 @@ function locate() {
 /* ---------- filter ---------- */
 
 function passesFilters(place) {
-  const {kinds, stepFree} = filters.value
+  const {kinds, stepFree, unconfirmedOnly} = filters.value
   if (kinds.length && !kinds.includes(place.kind)) return false
   if (stepFree && place.wheelchair !== 'yes') return false
+  // TEMPORARY: the chip swaps between two disjoint sets — confirmed by default,
+  // unconfirmed on demand. Meant for inspection until we rank places by zoom.
+  if (unconfirmedOnly ? place.confirmed : !place.confirmed) return false
   return true
 }
 
@@ -155,6 +158,13 @@ function buildItems() {
       latlng: [cell.latSum / count, cell.lngSum / count],
     }
   })
+}
+
+function googleMapsUrl(place) {
+  const query = `${place.lat},${place.lng}`
+  return place.gid
+      ? `https://www.google.com/maps/search/?api=1&query=${query}&query_place_id=${place.gid}`
+      : `https://www.google.com/maps/search/?api=1&query=${query}`
 }
 
 /* ---------- render ---------- */
@@ -337,9 +347,19 @@ onUnmounted(() => {
     <div v-if="selected" class="place-card">
       <div class="place-card__name">{{ selected.name }}</div>
       <div class="place-card__meta">
-        {{ selected.kind }}
+        {{ kindLabel(selected.kind) }}
         <template v-if="selected.address"> · {{ selected.address }}</template>
       </div>
+
+      <a
+          class="place-card__link"
+          :href="googleMapsUrl(selected)"
+          target="_blank"
+          rel="noopener noreferrer"
+      >
+        <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+        Показати на Google Maps
+      </a>
       <button class="place-card__close" aria-label="Закрити" @click="selected = null">×</button>
     </div>
   </div>
@@ -424,6 +444,22 @@ onUnmounted(() => {
 .place-card__meta {
   font-size: 13px;
   color: var(--ink-3);
+}
+
+.place-card__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  color: var(--plum);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+@media (hover: hover) {
+  .place-card__link:hover {
+    text-decoration: underline;
+  }
 }
 
 .place-card__close {

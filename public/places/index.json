@@ -10,8 +10,8 @@
         35.15
       ],
       "count": 684,
-      "version": "1bc1cea6",
-      "updatedAt": "2026-08-25"
+      "version": "d2a402e4",
+      "updatedAt": "2026-08-26"
     },
     {
       "id": "kharkiv",
@@ -23,8 +23,8 @@
         36.45
       ],
       "count": 1306,
-      "version": "0d8ed423",
-      "updatedAt": "2026-08-25"
+      "version": "344fbfec",
+      "updatedAt": "2026-08-26"
     },
     {
       "id": "kyiv",
@@ -36,8 +36,8 @@
         30.72
       ],
       "count": 4159,
-      "version": "5138417e",
-      "updatedAt": "2026-08-25"
+      "version": "c7626421",
+      "updatedAt": "2026-08-26"
     },
     {
       "id": "lviv",
@@ -49,8 +49,8 @@
         24.13
       ],
       "count": 1443,
-      "version": "887c3090",
-      "updatedAt": "2026-08-25"
+      "version": "07ed690d",
+      "updatedAt": "2026-08-26"
     }
   ]
 }

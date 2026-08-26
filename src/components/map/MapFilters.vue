@@ -2,11 +2,15 @@
 import {kindIcon, kindLabel, KINDS} from '@/components/map/kinds'
 import Tooltip from "@/components/ui/Tooltip.vue";
 
+const UNCONFIRMED_TIP =
+    'Показуємо тільки ті, яких не підтвердило жодне джерело. ' +
+    'Могли давно закритись — а могли й працювати, просто про них ніхто не подбав.'
+
 const ACCESS_TIP =
     'Показуємо ті, де сходинок точно немає. ' +
     'Про решту ми просто не знаємо — це не означає, що там незручно.'
 
-const filters = defineModel({default: () => ({kinds: [], stepFree: false})})
+const filters = defineModel({default: () => ({kinds: [], stepFree: false, unconfirmedOnly: false})})
 
 function toggleKind(kind) {
   const kinds = filters.value.kinds.includes(kind)
@@ -18,6 +22,11 @@ function toggleKind(kind) {
 
 function toggleStepFree() {
   filters.value = {...filters.value, stepFree: !filters.value.stepFree}
+}
+
+// TEMPORARY: a chip is the stopgap; the plan is to rank places by zoom instead.
+function toggleUnconfirmed() {
+  filters.value = {...filters.value, unconfirmedOnly: !filters.value.unconfirmedOnly}
 }
 
 </script>
@@ -49,6 +58,19 @@ function toggleStepFree() {
       >
         <i class="fa-solid fa-wheelchair" aria-hidden="true"></i>
         <span>Безбарʼєрно</span>
+      </button>
+    </Tooltip>
+
+    <Tooltip :text="UNCONFIRMED_TIP" v-slot="{ id }">
+      <button
+          class="chip chip--muted"
+          :class="{ 'is-on': filters.unconfirmedOnly }"
+          :aria-pressed="filters.unconfirmedOnly"
+          :aria-describedby="id"
+          @click="toggleUnconfirmed"
+      >
+        <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
+        <span>Непідтверджені</span>
       </button>
     </Tooltip>
 
@@ -120,6 +142,12 @@ function toggleStepFree() {
 
 .chip--access.is-on {
   background: var(--ink);
+  border-color: transparent;
+}
+
+/* Сірий, а не кольоровий: ця кнопка не про тип закладу, вона послаблює фільтр. */
+.chip--muted.is-on {
+  background: var(--ink-3);
   border-color: transparent;
 }
 </style>
