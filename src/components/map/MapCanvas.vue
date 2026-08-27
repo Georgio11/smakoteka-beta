@@ -356,6 +356,13 @@ onMounted(() => {
 
   const basemap = maplibreGL({
     style: `${import.meta.env.BASE_URL}map/style.json`,
+    /* Плагін сам збирає підпис із джерел стилю, але про наші дані він не знає.
+       Overture роздається під CDLA-Permissive, яка вимагає зазначати джерело
+       при роздачі — а ми віддаємо з неї телефони, сайти й соцмережі. */
+    attributionControl: {
+      customAttribution:
+          '© OpenStreetMap contributors · © Overture Maps · OpenFreeMap · OpenMapTiles',
+    },
   }).addTo(map.value)
 
   const gl = basemap.getMaplibreMap()
