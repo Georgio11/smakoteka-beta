@@ -11,7 +11,7 @@ import {escapeHtml} from '@/lib/html'
 import {cityBox} from '@/lib/placesRepo'
 import MapFilters from '@/components/map/MapFilters.vue'
 import Tooltip from '@/components/ui/Tooltip.vue'
-import CityPicker from "@/components/ui/CityPicker.vue";
+import MapLoader from '@/components/ui/MapLoader.vue'
 
 const FALLBACK_CENTER = [50.4501, 30.5234]
 const DEFAULT_ZOOM = 15
@@ -21,6 +21,7 @@ const MAX_ZOOM = 20
 const COVERAGE_PAD = 0.04
 const PAN_SLACK = 0.25
 const MOVE_DEBOUNCE = 250
+const READY_FALLBACK = 12000
 const DOT_SIZE = 30
 const CLUSTER_CELL = 68
 const CLUSTER_UNTIL_ZOOM = 16
@@ -36,9 +37,10 @@ const filters = ref({kinds: [], stepFree: false, unconfirmedOnly: false})
 const isOutsideCity = ref(false)
 const selected = shallowRef(null)
 const cityBounds = shallowRef(null)
-
-const {places, isLoading, error, loadBounds, coverage} = usePlacesNearby()
-const {cityList, city, pickCity} = useCity()
+const isReady = ref(false)
+const isTiling = ref(false)
+const {city} = useCity()
+const {places, isLoading, error, loadBounds} = usePlacesNearby()
 
 const layers = new Map()
 
@@ -46,6 +48,7 @@ const statusText = computed(() => {
   if (error.value) return error.value
   if (isOutsideCity.value) return 'Ти зараз не в цьому місті'
   if (isLoading.value) return 'Шукаю місця…'
+  if (isTiling.value) return 'Довантажуємо карту…'
 
   return ''
 })
@@ -113,6 +116,33 @@ function passesFilters(place) {
   return true
 }
 
+
+/* ---------- готовність ---------- */
+
+let hasStyle = false
+let hasPlaces = false
+let readyTimer = null
+
+function markReady(what) {
+  if (what === 'style') hasStyle = true
+  if (what === 'places') hasPlaces = true
+
+  if (!hasStyle || !hasPlaces) return
+
+  clearTimeout(readyTimer)
+  isReady.value = true
+}
+
+/* Шторка не має права висіти вічно: якщо тайли або бандл не приїхали,
+   через READY_FALLBACK показуємо те, що є. Порожня карта чесніша за
+   нескінченне очікування. */
+function armReadyFallback() {
+  clearTimeout(readyTimer)
+  readyTimer = setTimeout(() => {
+    isReady.value = true
+    isTiling.value = true
+  }, READY_FALLBACK)
+}
 
 /* ---------- clustering ---------- */
 
@@ -237,6 +267,12 @@ async function enterCity(id) {
 
   if (!box || !map.value) return
 
+  /* Нове місто — нові дані, тож шторка повертається: інакше при перемиканні
+     людина дивилась би на чужі мітки, поки приїдуть свої. */
+  hasPlaces = false
+  isReady.value = false
+  armReadyFallback()
+
   const [south, west, north, east] = box
 
   cityBounds.value = L.latLngBounds([south, west], [north, east]).pad(COVERAGE_PAD)
@@ -292,6 +328,14 @@ function onMapMove() {
 
 watch(places, renderItems)
 watch(filters, renderItems)
+
+/* Момент готовності — коли доїхало саме останнє завантаження. Раніше шторка
+   знімалась одразу після першого `await loadPlaces()`, а `fitBounds` встигав
+   зрушити карту й запустити друге, яке скасовувало перше. Тобто ми чекали на
+   запит, який сам себе відмінив, і показували порожню карту. */
+watch(isLoading, (busy) => {
+  if (!busy) markReady('places')
+})
 watch(city, (id) => {
   if (id) enterCity(id)
 })
@@ -310,19 +354,33 @@ onMounted(() => {
     zoomControl: false,
   })
 
-  maplibreGL({
+  const basemap = maplibreGL({
     style: `${import.meta.env.BASE_URL}map/style.json`,
   }).addTo(map.value)
+
+  const gl = basemap.getMaplibreMap()
+
+  gl.once('idle', () => markReady('style'))
+
+  /* Тайли догружаються й після того, як шторка злетіла достроково. Поки це
+     триває, чесніше сказати про це рядком, ніж малювати мітки на порожнечі. */
+  gl.on('idle', () => {
+    isTiling.value = false
+  })
 
   poiLayer.value = L.layerGroup().addTo(map.value)
 
   map.value.on('moveend', onMapMove)
   map.value.on('zoomend', onMapMove)
   map.value.on('resize', applyPanBounds)
+  armReadyFallback()
+
+  if (city.value) enterCity(city.value)
 })
 
 onUnmounted(() => {
   clearTimeout(moveTimer)
+  clearTimeout(readyTimer)
   map.value?.remove()
   map.value = null
   userMarker.value = null
@@ -338,6 +396,10 @@ onUnmounted(() => {
     <div v-if="statusText" class="map-status" :class="{ 'is-error': error }">
       {{ statusText }}
     </div>
+
+    <Transition name="loader">
+      <MapLoader v-if="!isReady"/>
+    </Transition>
 
     <MapFilters v-model="filters"/>
 
@@ -370,12 +432,18 @@ onUnmounted(() => {
       </a>
       <button class="place-card__close" aria-label="Закрити" @click="selected = null">×</button>
     </div>
-
-    <CityPicker v-if="!city" :cities="cityList" @select="pickCity"/>
   </div>
 </template>
 
 <style scoped>
+.loader-leave-active {
+  transition: opacity 0.45s var(--ease);
+}
+
+.loader-leave-to {
+  opacity: 0;
+}
+
 .map-wrap {
   position: absolute;
   inset: 0;
@@ -390,8 +458,7 @@ onUnmounted(() => {
 .map-status {
   position: absolute;
   top: var(--pad);
-  left: 50%;
-  transform: translateX(-50%);
+  left: var(--pad);
   z-index: var(--z-ui);
   padding: 7px 14px;
   border-radius: 99px;

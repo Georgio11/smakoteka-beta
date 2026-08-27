@@ -1,0 +1,57 @@
+/* Згенеровано scripts/build-icons.js — руками не правити.
+ * Іконки: Font Awesome Free, CC BY 4.0. Шрифт: SIL OFL 1.1, підмножина. */
+
+@font-face {
+  font-family: 'Smakoteka Icons';
+  font-style: normal;
+  font-weight: 900;
+  font-display: block;
+  src: url('../fonts/icons.woff2') format('woff2');
+}
+
+.fa-solid {
+  display: inline-block;
+  font-family: 'Smakoteka Icons';
+  font-weight: 900;
+  font-style: normal;
+  font-variant: normal;
+  line-height: 1;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+}
+
+.fa-mug-saucer::before {
+  content: '\f0f4';
+}
+
+.fa-utensils::before {
+  content: '\f2e7';
+}
+
+.fa-martini-glass::before {
+  content: '\f57b';
+}
+
+.fa-beer-mug-empty::before {
+  content: '\f0fc';
+}
+
+.fa-burger::before {
+  content: '\f805';
+}
+
+.fa-location-crosshairs::before {
+  content: '\f601';
+}
+
+.fa-circle-question::before {
+  content: '\f059';
+}
+
+.fa-wheelchair::before {
+  content: '\f193';
+}
+
+.fa-arrow-up-right-from-square::before {
+  content: '\f08e';
+}

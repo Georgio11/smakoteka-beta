@@ -1,20 +1,10 @@
 <script setup>
+import MapLoader from '@/components/ui/MapLoader.vue'
 </script>
 
 <template>
-  <div class="phone">
-    <main class="content">
-      <RouterView/>
-    </main>
-
-    <nav class="tabs">
-      <RouterLink to="/map">карта</RouterLink>
-      <RouterLink to="/list">місця</RouterLink>
-      <RouterLink to="/me">я</RouterLink>
-    </nav>
-  </div>
+  <RouterView v-slot="{ Component }">
+    <component :is="Component" v-if="Component"/>
+    <MapLoader v-else/>
+  </RouterView>
 </template>
-
-<style scoped>
-
-</style>

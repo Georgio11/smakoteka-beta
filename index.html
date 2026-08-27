@@ -1,13 +1,104 @@
 <!doctype html>
-<html lang="en">
+<html lang="uk">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Places</title>
+    <title>СмакоТека</title>
+
+    <!--
+      Заставка живе прямо в HTML і показується з першим байтом сторінки: доки
+      бандл вантажиться, Vue ще не існує, і намалювати лоадер нема кому.
+      Кольори тут задані числами навмисно — токени з main.scss приїжджають
+      разом зі скриптом, тобто пізніше за цей екран. Vue затирає цей вміст,
+      коли монтується в #app.
+    -->
+    <style>
+      .boot {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background: #f4f4f2;
+      }
+
+      .boot__bg {
+        position: absolute;
+        inset: -6%;
+        background: url('%BASE_URL%cover.webp') center / cover no-repeat;
+        filter: blur(9px);
+      }
+
+      .boot__bg::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgb(16 18 22 / 46%);
+      }
+
+      .boot__body {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .boot__text {
+        margin: 0;
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        font-size: 14px;
+        color: #fff;
+        text-shadow: 0 1px 16px rgb(0 0 0 / 60%);
+      }
+
+      .boot__dot {
+        position: relative;
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: #f5a300;
+        box-shadow: 0 6px 20px rgb(0 0 0 / 28%);
+        animation:
+          boot-kind 3.5s step-end infinite,
+          boot-pop 0.7s cubic-bezier(0.32, 0.72, 0, 1) infinite;
+      }
+
+      /* Ті самі п'ять кольорів типів і той самий крок 700 мс, що в лоадері:
+         заставка мусить бути схожа на нього, бо змінює його через пів секунди.
+         Іконок тут нема свідомо — Font Awesome на цей момент ще не існує. */
+      @keyframes boot-kind {
+        0% { background: #f5a300; }
+        20% { background: #d32f28; }
+        40% { background: #2563eb; }
+        60% { background: #0aa63d; }
+        80% { background: #c2189c; }
+      }
+
+      @keyframes boot-pop {
+        0% { transform: scale(0.86); }
+        40%, 100% { transform: scale(1); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .boot__dot {
+          animation: none;
+        }
+      }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <div class="boot">
+        <div class="boot__bg"></div>
+        <div class="boot__body">
+          <div class="boot__dot"></div>
+          <p class="boot__text">Малюємо карту…</p>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

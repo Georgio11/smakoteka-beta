@@ -25,3 +25,11 @@ dist-ssr
 
 # локальні дані OSM (не комітяться)
 data/
+
+# пайплайн даних — у публічному репо лишається тільки результат у public/places/
+scripts/fetch-places.js
+scripts/resolve-place-ids.js
+scripts/sync-overture.js
+scripts/lib/
+curated/
+README-dev.md

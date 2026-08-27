@@ -11,6 +11,7 @@
         30.72
       ],
       "count": 4159,
+      "confirmed": 2411,
       "version": "c7626421",
       "updatedAt": "2026-08-26"
     },
@@ -25,6 +26,7 @@
         24.13
       ],
       "count": 1443,
+      "confirmed": 0,
       "version": "07ed690d",
       "updatedAt": "2026-08-26"
     },
@@ -39,6 +41,7 @@
         35.15
       ],
       "count": 684,
+      "confirmed": 344,
       "version": "d2a402e4",
       "updatedAt": "2026-08-26"
     },
@@ -53,6 +56,7 @@
         36.45
       ],
       "count": 1306,
+      "confirmed": 0,
       "version": "344fbfec",
       "updatedAt": "2026-08-26"
     }

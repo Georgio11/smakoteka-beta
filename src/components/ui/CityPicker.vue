@@ -1,23 +1,56 @@
 <script setup>
-defineProps({
+import {computed} from 'vue'
+import {plural} from '@/lib/plural'
+
+const props = defineProps({
   cities: {type: Array, default: () => []},
 })
 
 defineEmits(['select'])
+
+const cover = `${import.meta.env.BASE_URL}cover.webp`
+
+const updatedAt = computed(() => {
+  const last = props.cities
+      .map((city) => city.updatedAt)
+      .filter(Boolean)
+      .sort()
+      .at(-1)
+
+  if (!last) return ''
+
+  const [year, month, day] = last.split('-')
+
+  return `${day}/${month}/${year}`
+})
+
+function placesLabel(count) {
+  return `${count} ${plural(count, ['місце', 'місця', 'місць'])}`
+}
 </script>
 
 <template>
   <div class="city-picker">
-    <div class="city-picker__box">
-      <h2 class="city-picker__title">Звідки почнемо?</h2>
-      <button
-          v-for="item in cities"
-          :key="item.id"
-          class="city-picker__item"
-          @click="$emit('select', item.id)"
-      >
-        {{ item.title }}
-      </button>
+    <div class="city-picker__bg" :style="{ backgroundImage: `url(${cover})` }"></div>
+
+    <div class="city-picker__body">
+      <h1 class="city-picker__logo">СмакоТека</h1>
+
+      <div class="city-picker__card">
+        <p class="city-picker__q">Звідки почнемо?</p>
+
+        <button
+            v-for="item in cities"
+            :key="item.id"
+            class="city-picker__item"
+            @click="$emit('select', item.id)"
+        >
+          <span>{{ item.title }}</span>
+          <span class="city-picker__count">{{ placesLabel(item.places) }}</span>
+        </button>
+      </div>
+
+      <p v-if="updatedAt" class="city-picker__date">Оновлено {{ updatedAt }}</p>
     </div>
   </div>
 </template>
@@ -26,47 +59,89 @@ defineEmits(['select'])
 .city-picker {
   position: fixed;
   inset: 0;
-  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: var(--pad);
-  background: rgb(20 22 26 / 45%);
-
+  overflow: hidden;
+  background: var(--paper);
 }
 
-.city-picker__box {
-  width: 320px;
-  max-width: 100%;
+.city-picker__bg {
+  position: absolute;
+  inset: -6%;
+  background-position: center;
+  background-size: cover;
+  filter: blur(7px);
+}
+
+.city-picker__bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgb(16 18 22 / 46%);
+}
+
+.city-picker__body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.city-picker__logo {
+  font-size: clamp(40px, 8vw, 60px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: #fff;
+  text-shadow: 0 2px 30px rgb(0 0 0 / 45%);
+}
+
+.city-picker__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  width: 100%;
   padding: var(--pad);
   border-radius: var(--r-lg);
   background: var(--card);
-  box-shadow: 0 12px 40px rgb(0 0 0 / 22%);
+  box-shadow: 0 18px 50px rgb(0 0 0 / 28%);
 }
 
-.city-picker__title {
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.city-picker__hint {
-  margin: 6px 0 var(--gap-lg);
-  font-size: 13px;
+.city-picker__q {
+  font-size: 14px;
   color: var(--ink-3);
 }
 
 .city-picker__item {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   width: 100%;
   height: var(--control-h);
-  margin-top: var(--gap);
+  padding: 0 14px;
   border: 1px solid var(--line);
   border-radius: var(--r);
   background: var(--card);
   font-size: 15px;
-  text-align: left;
-  padding: 0 14px;
   color: var(--ink);
+}
+
+.city-picker__count {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-3);
+}
+
+.city-picker__date {
+  font-size: 13px;
+  color: rgb(255 255 255 / 86%);
+  text-shadow: 0 1px 12px rgb(0 0 0 / 45%);
 }
 
 @media (hover: hover) {

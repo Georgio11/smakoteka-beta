@@ -17,7 +17,12 @@ export function loadManifest() {
 export async function listCities() {
     const { bundles } = await loadManifest()
 
-    return bundles.map(({ id, title }) => ({ id, title }))
+    return bundles.map(({ id, title, confirmed, updatedAt }) => ({
+        id,
+        title,
+        places: confirmed ?? 0,
+        updatedAt,
+    }))
 }
 
 export async function boxOf(id) {
