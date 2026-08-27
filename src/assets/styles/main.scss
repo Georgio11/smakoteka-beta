@@ -127,13 +127,15 @@ textarea {
   background: rgb(255 255 255 / 70%);
 }
 
-.user-dot {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #2f7bd6;
-  border: 2.5px solid #fff;
-  box-shadow: 0 0 0 1px rgb(0 0 0 / 15%);
+.user-pin {
+  font-size: 26px;
+  line-height: 1;
+  color: #2f7bd6;
+  /* Обводка замість рамки: у гліфа немає прямокутних меж, а на світлій
+     підкладці синє по світло-сірому губиться. */
+  -webkit-text-stroke: 1.5px #fff;
+  paint-order: stroke fill;
+  filter: drop-shadow(0 2px 3px rgb(0 0 0 / 25%));
 }
 
 .poi-dot {

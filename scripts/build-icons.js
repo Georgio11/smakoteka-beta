@@ -28,6 +28,7 @@ const ICONS = {
     'location-crosshairs': 'f601',
     'circle-question': 'f059',
     'wheelchair': 'f193',
+    'map-pin': 'f276',
     'arrow-up-right-from-square': 'f08e',
 }
 

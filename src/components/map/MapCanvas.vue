@@ -68,8 +68,11 @@ function showUser(lat, lng) {
   userMarker.value = L.marker([lat, lng], {
     icon: L.divIcon({
       className: '',
-      html: '<div class="user-dot"></div>',
-      iconSize: [16, 16],
+      html: '<i class="fa-solid fa-map-pin user-pin" aria-hidden="true"></i>',
+      /* Вістря шпильки внизу посередині — туди й ставимо якір, інакше мітка
+         вказувала б на місце вище за реальне. */
+      iconSize: [22, 26],
+      iconAnchor: [11, 26],
     }),
     interactive: false,
     zIndexOffset: 1000,
