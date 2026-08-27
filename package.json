@@ -7,9 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "fetch:places": "node scripts/fetch-places.js",
-    "resolve:places": "node scripts/resolve-place-ids.js",
-    "sync:overture": "node scripts/sync-overture.js",
+    "fetch:places": "node pipeline/scripts/fetch-places.js",
+    "resolve:places": "node pipeline/scripts/resolve-place-ids.js",
+    "sync:overture": "node pipeline/scripts/sync-overture.js",
     "build:style": "node scripts/build-map-style.js",
     "build:icons": "node scripts/build-icons.js"
   },
