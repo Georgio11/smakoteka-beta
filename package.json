@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "fetch:places": "node pipeline/scripts/fetch-places.js",
     "resolve:places": "node pipeline/scripts/resolve-place-ids.js",
+    "replay:google": "node pipeline/scripts/replay-google.js",
     "sync:overture": "node pipeline/scripts/sync-overture.js",
     "fetch:photos": "node pipeline/scripts/fetch-photos.js",
     "fetch:logos": "node pipeline/scripts/fetch-logos.js",

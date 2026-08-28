@@ -10,9 +10,9 @@
         50.55,
         30.72
       ],
-      "count": 4159,
-      "confirmed": 2411,
-      "version": "9344de17",
+      "count": 3820,
+      "confirmed": 2802,
+      "version": "5b228e8a",
       "updatedAt": "2026-08-28"
     },
     {
@@ -25,9 +25,9 @@
         49.9,
         24.13
       ],
-      "count": 1443,
+      "count": 1441,
       "confirmed": 0,
-      "version": "8aa0780d",
+      "version": "1283fe43",
       "updatedAt": "2026-08-28"
     },
     {
@@ -40,9 +40,9 @@
         48.55,
         35.15
       ],
-      "count": 684,
-      "confirmed": 344,
-      "version": "e97d467c",
+      "count": 648,
+      "confirmed": 404,
+      "version": "0361c892",
       "updatedAt": "2026-08-28"
     },
     {
