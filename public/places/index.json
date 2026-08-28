@@ -10,9 +10,9 @@
         50.55,
         30.72
       ],
-      "count": 3820,
+      "count": 3378,
       "confirmed": 2802,
-      "version": "5b228e8a",
+      "version": "369540d8",
       "updatedAt": "2026-08-28"
     },
     {
@@ -40,9 +40,9 @@
         48.55,
         35.15
       ],
-      "count": 648,
+      "count": 634,
       "confirmed": 404,
-      "version": "0361c892",
+      "version": "70c7303a",
       "updatedAt": "2026-08-28"
     },
     {

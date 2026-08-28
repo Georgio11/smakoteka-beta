@@ -14,7 +14,9 @@
     "fetch:photos": "node pipeline/scripts/fetch-photos.js",
     "fetch:logos": "node pipeline/scripts/fetch-logos.js",
     "build:style": "node scripts/build-map-style.js",
-    "build:icons": "node scripts/build-icons.js"
+    "build:icons": "node scripts/build-icons.js",
+    "review:text": "node pipeline/scripts/review-text.js",
+    "edit:places": "node pipeline/scripts/edit-places.js"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.3.1",
