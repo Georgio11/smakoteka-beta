@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, onUnmounted, ref, shallowRef, watch} from 'vue'
+import {computed, onMounted, onUnmounted, ref, shallowRef, watch, watchEffect} from 'vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import {maplibreGL} from '@maplibre/maplibre-gl-leaflet'
@@ -7,9 +7,11 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import {usePlacesNearby} from '@/composables/usePlacesNearby'
 import {useCity} from '@/composables/useCity'
 import {useSelectedPlace} from '@/composables/useSelectedPlace'
+import {useMapTab} from '@/composables/useMapTab'
+import {useMapCount} from '@/composables/useMapCount'
 import {kindMarkerHtml} from '@/components/map/kinds'
 import {escapeHtml} from '@/lib/html'
-import {cityBox, placeByUid} from '@/lib/placesRepo'
+import {cityBox, cityPlaces, placeByUid} from '@/lib/placesRepo'
 import MapFilters from '@/components/map/MapFilters.vue'
 import Tooltip from '@/components/ui/Tooltip.vue'
 import MapLoader from '@/components/ui/MapLoader.vue'
@@ -39,6 +41,7 @@ const poiLayer = shallowRef(null)
 const isLocating = ref(false)
 const filters = ref({kinds: [], stepFree: false, unconfirmedOnly: false})
 const isOutsideCity = ref(false)
+const cityList = shallowRef([])
 
 const cityBounds = shallowRef(null)
 const isReady = ref(false)
@@ -46,6 +49,8 @@ const isTiling = ref(false)
 const {city} = useCity()
 const {places, isLoading, error, loadBounds} = usePlacesNearby()
 const {uid, selectPlace, closePlace} = useSelectedPlace()
+const {resetTab} = useMapTab()
+const {shown} = useMapCount()
 const selected = shallowRef(null)
 
 /* `places` тримає лише те, що у видимій області, тому шукати вибраний заклад
@@ -156,6 +161,12 @@ function passesFilters(place) {
   if (unconfirmedOnly ? place.confirmed : !place.confirmed) return false
   return true
 }
+
+const shownCount = computed(() => cityList.value.filter(passesFilters).length)
+
+watchEffect(() => {
+  shown.value = shownCount.value
+})
 
 
 /* ---------- готовність ---------- */
@@ -386,9 +397,11 @@ function onMapMove() {
 
 watch(places, renderItems)
 watch(filters, () => {
+  if (uid.value) resetTab()
   closePlace()
   renderItems()
 })
+
 
 watch(isLoading, (busy) => {
   if (!busy) markReady('places')
@@ -418,7 +431,12 @@ watch(selected, (place, before) => {
   })
 })
 
+watch(city, async (id) => {
+  const wanted = id
+  const list = id ? await cityPlaces(id) : []
 
+  if (city.value === wanted) cityList.value = list
+}, {immediate: true})
 
 /* ---------- lifecycle ---------- */
 

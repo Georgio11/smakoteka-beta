@@ -50,6 +50,7 @@ const ICONS = {
     'chevron-down': 'f078',
     'chevron-up': 'f077',
     'seedling': 'f4d8',
+    'border-all': 'f84c',
     'sun': 'f185',
 }
 

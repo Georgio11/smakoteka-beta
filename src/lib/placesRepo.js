@@ -98,3 +98,7 @@ function share(entryKey, entry, signal) {
 function abortError(signal) {
     return signal.reason ?? new DOMException('Aborted', 'AbortError')
 }
+
+export function cityPlaces(id) {
+    return bundles.placesOf(id)
+}

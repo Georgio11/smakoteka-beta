@@ -119,3 +119,23 @@ function inside(tile, [south, west, north, east]) {
 function overlaps(tile, [south, west, north, east]) {
     return tile.south < north && tile.north > south && tile.west < east && tile.east > west
 }
+
+const cityLists = new Map()
+
+export async function placesOf(cityId) {
+    const {bundles} = await loadManifest()
+    const bundle = bundles.find((item) => item.id === cityId)
+
+    if (!bundle) return []
+
+    const byTile = await loadBundle(bundle)
+
+    let list = cityLists.get(cityId)
+
+    if (!list) {
+        list = [...byTile.values()].flat()
+        cityLists.set(cityId, list)
+    }
+
+    return list
+}

@@ -1,6 +1,8 @@
 <script setup>
 import {computed, ref} from "vue";
 
+import {useMapTab} from '@/composables/useMapTab';
+
 import Search from '@/components/ui/Search.vue';
 import MenuMap from "@/components/menu/MenuMap.vue";
 import MenuProfile from "@/components/menu/MenuProfile.vue";
@@ -20,11 +22,14 @@ const props = defineProps({
 })
 const emit = defineEmits(['close'])
 
+const {resetTab} = useMapTab()
+
+
 function pickTab(id) {
   tab.value = id
+  resetTab()
   emit('close')
 }
-
 
 </script>
 
@@ -37,6 +42,7 @@ function pickTab(id) {
       <MenuPlace v-if="place" :key="place.uid" :place="place" @close="$emit('close')"/>
       <MenuProfile v-else-if="tab === 'profile'"/>
       <MenuMap v-else/>
+
     </div>
     <div class="menu-wrapper__btns">
       <button v-for="item in TABS" :key="item.id" class="menu-wrapper__btn"
@@ -74,11 +80,25 @@ function pickTab(id) {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  /* Місце під смугу прокрутки тримаємо завжди. Інакше вона зʼявляється разом
-     із довгим вмістом, забирає свої 15px у панелі фіксованої ширини — і все
-     всередині стискається просто від того, що розгорнули години. */
   scrollbar-gutter: stable;
   padding: var(--pad);
+  padding-right: calc(var(--pad) - var(--scroll-w));
+
+  &::-webkit-scrollbar {
+    width: var(--scroll-w);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: var(--r-pill);
+    background: var(--line-2);
+  }
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .menu-wrapper__choice {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-2) transparent;
+  }
 }
 
 .menu-wrapper__btns {

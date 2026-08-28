@@ -10,8 +10,7 @@ const RATINGS = [
   {id: 'ok', label: 'Норм', icon: 'fa-face-smile'},
   {id: 'top', label: 'Топ', icon: 'fa-face-smile-beam'},
 ]
-/* Поля контактів у бандлі розріджені: у більшості закладів немає жодного,
-   у декого чотири. Порядок тут — порядок кнопок у картці. */
+
 const NETWORKS = [
   {field: 'instagram', icon: 'fa-instagram', label: 'Instagram'},
   {field: 'facebook', icon: 'fa-facebook-f', label: 'Facebook'},
@@ -61,18 +60,11 @@ defineEmits(['close'])
 
 const networks = computed(() => NETWORKS.filter((item) => props.place[item.field]))
 
-/* Фото живе на чужому сервері й може зникнути будь-коли, а перевіряли ми його
-   на прогоні. Тому падіння картинки — не помилка, а звичайний стан. */
 const broken = ref(false)
 const source = computed(() => (broken.value ? null : props.place.photo ?? props.place.logo ?? null))
 
-/* Фото з сайту показує сам заклад — його можна кадрувати. Аватарка з фейсбука
-   це знак закладу, і обрізана вона перетворюється на кашу з половини літер. */
 const isLogo = computed(() => Boolean(source.value) && source.value === props.place.logo)
 
-/* Поверх у OSM рахується від нуля, а в нас перший — це рівень землі. Нуля в
-   даних немає, тож додатний перекладається на наш лад, відʼємний називається
-   словом: «−1 поверх» не сказало б нічого. */
 const levelText = computed(() => {
   const level = props.place.level
 
@@ -82,8 +74,6 @@ const levelText = computed(() => {
   return level === -1 ? 'цокольний поверх' : `${-level}-й підземний поверх`
 })
 
-/* Веганське важливіше за вегетаріанське й покриває його: якщо є перше, друге
-   вже не новина. Тому значок один, а слово залежить від того, що знайшлось. */
 const diet = computed(() => {
   const kind = props.place.vegan ? 'vegan' : props.place.vegetarian ? 'vegetarian' : null
 
@@ -94,14 +84,10 @@ const diet = computed(() => {
 
 const showHours = ref(false)
 
-/* Час беремо один раз на відкриття картки: людина дивиться на неї хвилину, за
-   яку «відчинено» на «зачинено» не зміниться. */
 const now = kyivNow()
 const week = computed(() => parseHours(props.place.hours))
 const status = computed(() => (week.value ? statusOf(week.value, now) : null))
 
-/* Тиждень починається з сьогодні, а не з понеділка: людину цікавить «сьогодні
-   і далі», а не де в тижні вона опинилась. */
 const week7 = computed(() => Array.from({length: 7}, (item, shift) => {
   const day = (now.day + shift) % 7
 
@@ -149,8 +135,6 @@ async function copyLink() {
   }, COPIED_FOR)
 }
 
-/* tel: не терпить пробілів і дужок — у даних телефон трапляється і як
-   «068 741 4889», і як «+380 (44) 123-45-67». Лишаємо цифри й провідний плюс. */
 function telHref(phone) {
   return `tel:${phone.replace(/(?!^\+)\D/g, '')}`
 }
