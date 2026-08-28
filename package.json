@@ -13,6 +13,7 @@
     "sync:overture": "node pipeline/scripts/sync-overture.js",
     "fetch:photos": "node pipeline/scripts/fetch-photos.js",
     "fetch:logos": "node pipeline/scripts/fetch-logos.js",
+    "fetch:site-images": "node pipeline/scripts/fetch-site-images.js",
     "build:style": "node scripts/build-map-style.js",
     "build:icons": "node scripts/build-icons.js",
     "review:text": "node pipeline/scripts/review-text.js",
