@@ -12,6 +12,7 @@ import {useMapCount} from '@/composables/useMapCount'
 import {kindMarkerHtml} from '@/components/map/kinds'
 import {escapeHtml} from '@/lib/html'
 import {cityBox, cityPlaces, placeByUid} from '@/lib/placesRepo'
+import {basemapStyle} from '@/lib/basemap'
 import MapFilters from '@/components/map/MapFilters.vue'
 import Tooltip from '@/components/ui/Tooltip.vue'
 import MapLoader from '@/components/ui/MapLoader.vue'
@@ -440,7 +441,7 @@ watch(city, async (id) => {
 
 /* ---------- lifecycle ---------- */
 
-onMounted(() => {
+onMounted(async () => {
   map.value = L.map(container.value, {
     center: FALLBACK_CENTER,
     zoom: DEFAULT_ZOOM,
@@ -450,8 +451,30 @@ onMounted(() => {
     zoomControl: false,
   })
 
+  poiLayer.value = L.layerGroup().addTo(map.value)
+
+  map.value.on('moveend', onMapMove)
+  map.value.on('zoomend', onMapMove)
+  map.value.on('resize', applyPanBounds)
+  map.value.on('click', closePlace)
+  armReadyFallback()
+
+  if (city.value) enterCity(city.value)
+
+  const style = await basemapStyle().catch((err) => {
+    console.warn('Basemap style:', err.message)
+
+    return null
+  })
+
+  /* Стиль їде мережею, а за цей час компонент могли зняти. */
+  if (!style || !map.value) {
+    markReady('style')
+    return
+  }
+
   const basemap = maplibreGL({
-    style: `${import.meta.env.BASE_URL}map/style.json`,
+    style,
     attributionControl: {
       customAttribution:
           '© OpenStreetMap contributors · © Overture Maps · OpenFreeMap · OpenMapTiles',
@@ -465,16 +488,6 @@ onMounted(() => {
   gl.on('idle', () => {
     isTiling.value = false
   })
-
-  poiLayer.value = L.layerGroup().addTo(map.value)
-
-  map.value.on('moveend', onMapMove)
-  map.value.on('zoomend', onMapMove)
-  map.value.on('resize', applyPanBounds)
-  map.value.on('click', closePlace)
-  armReadyFallback()
-
-  if (city.value) enterCity(city.value)
 })
 
 onUnmounted(() => {

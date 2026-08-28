@@ -8,7 +8,11 @@
  * Друга: підписи однією українською. У Bright вони подвійні — «Kyiv Київ»,
  * латиниця плюс місцева назва в один рядок.
  *
- * Третя: одна гарнітура замість трьох і шрифти до себе. Кожна гарнітура тягне
+ * Третя: у фільтрах підписів міст `capital` порівнюється з числом, а в тайлах
+ * він є тільки в столиць — у решти `null`, і maplibre на кожному такому місті
+ * кидає помилку в консоль. Обгортаємо в `coalesce` з нулем.
+ *
+ * Четверта: одна гарнітура замість трьох і шрифти до себе. Кожна гарнітура тягне
  * свої діапазони символів окремими файлами, і на першому заході це було 691 КБ
  * з чужого домену — більше за все інше разом. Italic лишався заради назв річок,
  * ціна невиправдана.
@@ -74,6 +78,15 @@ for (const layer of style.layers) {
     relabelled += 1
 }
 
+let denulled = 0
+
+for (const layer of style.layers) {
+    if (!layer.filter || !JSON.stringify(layer.filter).includes('"capital"')) continue
+
+    layer.filter = coalesceCapital(layer.filter)
+    denulled += 1
+}
+
 for (const layer of style.layers) {
     const face = layer.layout?.['text-font']
 
@@ -126,7 +139,10 @@ for (const face of FACES) {
 await mkdir(OUT_DIR, { recursive: true })
 await writeFile(OUT, JSON.stringify(style))
 
-console.log(`шарів ${total} -> ${style.layers.length}, підписів переписано ${relabelled}, гарнітур замінено ${refonted}`)
+console.log(
+    `шарів ${total} -> ${style.layers.length}, підписів переписано ${relabelled}, ` +
+        `гарнітур замінено ${refonted}, фільтрів із capital полагоджено ${denulled}`,
+)
 console.log(`шрифтів забрано ${FACES.length * RANGES.length} файлів, ${(fontBytes / 1024).toFixed(0)} КБ`)
 console.log(`Записано ${OUT}`)
 
@@ -134,4 +150,16 @@ console.log(`Записано ${OUT}`)
  *  склеювання латиниці з місцевою назвою. Підписи доріг (`ref`) не чіпаємо. */
 function isDualName(field) {
     return Array.isArray(field) && JSON.stringify(field).includes('name:nonlatin')
+}
+
+/** Порівнювати з числом можна лише число, тому `null` стає нулем: столиця
+ *  позначена двійкою, а нуль не збігається ні з ким. */
+function coalesceCapital(node) {
+    if (!Array.isArray(node)) return node
+
+    const [head, ...rest] = node
+
+    if (head === 'get' && rest[0] === 'capital') return ['coalesce', node, 0]
+
+    return [head, ...rest.map(coalesceCapital)]
 }
