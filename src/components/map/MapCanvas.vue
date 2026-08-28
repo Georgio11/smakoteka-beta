@@ -40,6 +40,7 @@ const map = shallowRef(null)
 const userMarker = shallowRef(null)
 const poiLayer = shallowRef(null)
 const isLocating = ref(false)
+const geoError = ref(null)
 const filters = ref({kinds: [], stepFree: false, unconfirmedOnly: false})
 const isOutsideCity = ref(false)
 const cityList = shallowRef([])
@@ -84,6 +85,7 @@ const layers = new Map()
 
 const statusText = computed(() => {
   if (error.value) return error.value
+  if (geoError.value) return geoError.value
   if (isOutsideCity.value) return 'Ти зараз не в цьому місті'
   if (isLoading.value) return 'Шукаю місця…'
   if (isTiling.value) return 'Довантажуємо карту…'
@@ -126,6 +128,7 @@ function locate({recenter = true} = {}) {
   if (!navigator.geolocation) return
 
   isLocating.value = true
+  geoError.value = null
 
   navigator.geolocation.getCurrentPosition(
       ({coords}) => {
@@ -145,7 +148,10 @@ function locate({recenter = true} = {}) {
       },
       (err) => {
         isLocating.value = false
-        console.warn('Geolocation failed:', err.message)
+        geoError.value =
+            err.code === err.PERMISSION_DENIED
+                ? 'Браузер не дає нам твоє місце. Тицьни замочок біля адреси й дозволь доступ'
+                : 'Не вдалось знайти, де ти зараз. Спробуй ще раз'
       },
       {enableHighAccuracy: true, timeout: 8000, maximumAge: 30000},
   )
@@ -505,7 +511,7 @@ onUnmounted(() => {
   <div class="map-canvas">
     <div ref="container" class="map-canvas__viewport"></div>
 
-    <div v-if="statusText" class="map-canvas__status" :class="{ 'map-canvas__status--error': error }">
+    <div v-if="statusText" class="map-canvas__status" :class="{ 'map-canvas__status--error': error || geoError }">
       {{ statusText }}
     </div>
 
