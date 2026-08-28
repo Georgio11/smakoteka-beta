@@ -40,6 +40,10 @@ export function cityBox(id) {
     return bundles.boxOf(id)
 }
 
+export function placeByUid(cityId, uid) {
+    return bundles.placeByUid(cityId, uid)
+}
+
 async function fromSources(key, signal) {
     const fromBundle = await bundles.tilesOf(key, signal)
 

@@ -87,7 +87,7 @@ function placesLabel(count) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 22px;
+  gap: var(--s-5);
   width: 100%;
   max-width: 360px;
 }
@@ -98,18 +98,18 @@ function placesLabel(count) {
   line-height: 1;
   letter-spacing: -0.03em;
   color: #fff;
-  text-shadow: 0 2px 30px rgb(0 0 0 / 45%);
+  text-shadow: var(--text-shadow-lg);
 }
 
 .city-picker__card {
   display: flex;
   flex-direction: column;
-  gap: var(--gap);
+  gap: var(--s-2);
   width: 100%;
   padding: var(--pad);
   border-radius: var(--r-lg);
   background: var(--card);
-  box-shadow: 0 18px 50px rgb(0 0 0 / 28%);
+  box-shadow: var(--shadow-4);
 }
 
 .city-picker__q {
@@ -121,10 +121,9 @@ function placesLabel(count) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--s-3);
   width: 100%;
-  height: var(--control-h);
-  padding: 0 14px;
+  padding: var(--s-3);
   border: 1px solid var(--line);
   border-radius: var(--r);
   background: var(--card);
@@ -141,7 +140,7 @@ function placesLabel(count) {
 .city-picker__date {
   font-size: 13px;
   color: rgb(255 255 255 / 86%);
-  text-shadow: 0 1px 12px rgb(0 0 0 / 45%);
+  text-shadow: var(--text-shadow);
 }
 
 @media (hover: hover) {

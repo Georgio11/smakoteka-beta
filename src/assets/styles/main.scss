@@ -1,4 +1,5 @@
 @use './icons';
+@use './buttons';
 
 :root {
   --ink: #14161a;
@@ -11,22 +12,56 @@
   --plum: #6b2d4e;
   --plum-bg: #f6ecf1;
   --sage: #5d7a63;
-  --kind-cafe: #f5a300;
+  --kind-cafe: var(--orange);
   --kind-restaurant: #d32f28;
   --kind-bar: #2563eb;
   --kind-pub: #0aa63d;
   --kind-fast_food: #c2189c;
 
-  --r: 10px;
+  --red: #d92d20;
+  --orange: #f5a300;
+  --yellow: #eab308;
+  --green: #16a34a;
+
+  --mark-visited: var(--green);
+  --mark-planned: var(--yellow);
+
+  --rate-meh: var(--red);
+  --rate-ok: var(--yellow);
+  --rate-top: var(--green);
+
+  --r-sm: 8px;
+  --r: 12px;
   --r-lg: 16px;
+  --r-pill: 999px;
 
-  --pad: 18px;
-  --gap: 8px;
-  --gap-lg: 14px;
+  /* Заокруглення лого в картці: var(--r) — як у фото, 50% — кружечок. */
+  --logo-r: var(--r);
 
-  --tabs-h: 56px;
+  /* Півкрок шкали. Тільки для оптичних поправок упритул до гліфів — там, де
+     4px уже читається як відрив. Розкладку на ньому не будувати. */
+  --s-05: 2px;
+
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+
+  --pad: var(--s-4);
+
+  --shadow-1: 0 1px 6px rgb(0 0 0 / 8%);
+  --shadow-2: 0 4px 16px rgb(0 0 0 / 12%);
+  --shadow-3: 0 8px 24px rgb(0 0 0 / 24%);
+  --shadow-4: 0 16px 48px rgb(0 0 0 / 24%);
+  --shadow-marker: 0 0 0 1px rgb(0 0 0 / 20%), 1px 2px 4px rgb(0 0 0 / 22%);
+  --shadow-marker-hover: 0 0 0 1px rgb(0 0 0 / 18%), 2px 4px 10px rgb(0 0 0 / 26%);
+
+  --text-shadow: 0 1px 14px rgb(0 0 0 / 50%);
+  --text-shadow-lg: 0 2px 32px rgb(0 0 0 / 45%);
+
   --panel-w: 400px;
-  --control-h: 44px;
 
   --z-map: 1;
   --z-ui: 10;
@@ -34,6 +69,8 @@
   --z-toast: 30;
 
   --dur: 0.28s;
+  --dur-fast: 0.14s;
+  --tip-delay: 0.7s;
   --ease: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
@@ -54,9 +91,6 @@ body,
 }
 
 body {
-  /* Системний стек навмисно: Instrument Sans, який тут стояв, не має кирилиці
-     взагалі — українські слова все одно малювались системним шрифтом, а з
-     Google качалось те, що дісталось хіба цифрам. */
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   font-size: 16px;
   line-height: 1.5;
@@ -117,6 +151,10 @@ textarea {
   z-index: 10000 !important;
 }
 
+.leaflet-marker-icon:has(.poi-dot--on) {
+  z-index: 9000 !important;
+}
+
 .leaflet-container {
   background: #eceae5;
   font-family: inherit;
@@ -131,8 +169,6 @@ textarea {
   font-size: 26px;
   line-height: 1;
   color: #2f7bd6;
-  /* Обводка замість рамки: у гліфа немає прямокутних меж, а на світлій
-     підкладці синє по світло-сірому губиться. */
   -webkit-text-stroke: 1.5px #fff;
   paint-order: stroke fill;
   filter: drop-shadow(0 2px 3px rgb(0 0 0 / 25%));
@@ -141,15 +177,13 @@ textarea {
 .poi-dot {
   display: flex;
   align-items: center;
-  box-shadow:
-    0 0 0 1px rgb(0 0 0 / 20%),
-    1px 2px 4px rgb(0 0 0 / 22%);
+  box-shadow: var(--shadow-marker);
   line-height: 1;
   width: fit-content;
   padding: 2px;
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   background: #fff;
-  transition: box-shadow 140ms ease;
+  transition: box-shadow var(--dur-fast) var(--ease);
 
   .poi-dot__icon {
     display: flex;
@@ -172,7 +206,7 @@ textarea {
     color: var(--ink);
     font-size: 13px;
     font-weight: 600;
-    transition: max-width 140ms ease, opacity 140ms ease;
+    transition: max-width var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease);
   }
 
   &--cafe {
@@ -205,20 +239,17 @@ textarea {
     }
   }
 
-  &:hover {
-    box-shadow:
-      0 0 0 1px rgb(0 0 0 / 18%),
-      2px 4px 10px rgb(0 0 0 / 26%);
-  }
+  &:hover,
+  &--on {
+    box-shadow: var(--shadow-marker-hover);
 
-  &:hover .poi-dot__name {
-    max-width: 300px;
-    opacity: 1;
-    padding: 0 10px 0 6px;
+    .poi-dot__name {
+      max-width: 300px;
+      opacity: 1;
+      padding: 0 var(--s-3) 0 var(--s-2);
+    }
   }
 }
-
-
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -237,7 +268,7 @@ textarea {
   background: #3e4552;
   color: #fff;
   border: 2px solid #fff;
-  box-shadow: 0 1px 6px rgb(0 0 0 / 30%);
+  box-shadow: var(--shadow-marker);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;

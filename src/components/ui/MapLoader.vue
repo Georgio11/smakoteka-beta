@@ -37,7 +37,7 @@ onUnmounted(() => clearInterval(timer))
             v-for="(kind, index) in KINDS"
             :key="kind"
             class="map-loader__dot"
-            :class="{ 'is-on': index === active }"
+            :class="{ 'map-loader__dot--on': index === active }"
             :style="{ background: `var(--kind-${kind})` }"
         >
           <i v-if="iconsReady" class="fa-solid" :class="kindIcon(kind)"></i>
@@ -84,7 +84,7 @@ onUnmounted(() => clearInterval(timer))
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: var(--s-5);
 }
 
 .map-loader__stage {
@@ -105,10 +105,10 @@ onUnmounted(() => clearInterval(timer))
   opacity: 0;
   transform: scale(0.5);
   transition: opacity 0.35s var(--ease), transform 0.35s var(--ease);
-  box-shadow: 0 6px 20px rgb(0 0 0 / 28%);
+  box-shadow: var(--shadow-3);
 }
 
-.map-loader__dot.is-on {
+.map-loader__dot--on {
   opacity: 1;
   transform: scale(1);
 }
@@ -116,7 +116,7 @@ onUnmounted(() => clearInterval(timer))
 .map-loader__text {
   font-size: 14px;
   color: #fff;
-  text-shadow: 0 1px 16px rgb(0 0 0 / 60%);
+  text-shadow: var(--text-shadow);
 }
 
 @media (prefers-reduced-motion: reduce) {

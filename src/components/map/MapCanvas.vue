@@ -6,18 +6,21 @@ import {maplibreGL} from '@maplibre/maplibre-gl-leaflet'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import {usePlacesNearby} from '@/composables/usePlacesNearby'
 import {useCity} from '@/composables/useCity'
-import {kindLabel, kindMarkerHtml} from '@/components/map/kinds'
+import {useSelectedPlace} from '@/composables/useSelectedPlace'
+import {kindMarkerHtml} from '@/components/map/kinds'
 import {escapeHtml} from '@/lib/html'
-import {cityBox} from '@/lib/placesRepo'
+import {cityBox, placeByUid} from '@/lib/placesRepo'
 import MapFilters from '@/components/map/MapFilters.vue'
 import Tooltip from '@/components/ui/Tooltip.vue'
 import MapLoader from '@/components/ui/MapLoader.vue'
+import MenuWrapper from "@/components/menu/MenuWrapper.vue";
 
 const FALLBACK_CENTER = [50.4501, 30.5234]
 const DEFAULT_ZOOM = 15
 const LOCATED_ZOOM = 16
 const MIN_ZOOM = 12
 const MAX_ZOOM = 20
+const PLACE_ZOOM = 16
 const COVERAGE_PAD = 0.04
 const PAN_SLACK = 0.25
 const MOVE_DEBOUNCE = 250
@@ -26,7 +29,8 @@ const DOT_SIZE = 30
 const CLUSTER_CELL = 68
 const CLUSTER_UNTIL_ZOOM = 16
 
-const LOCATE_TIP = 'Покажемо, де ви зараз. Браузер спитає дозвіл — без нього нічого не вийде.'
+const LOCATE_TIP = 'Покажемо, де ти зараз. Браузер спитає дозвіл — без нього нічого не вийде.'
+const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)')
 
 const container = ref(null)
 const map = shallowRef(null)
@@ -35,12 +39,40 @@ const poiLayer = shallowRef(null)
 const isLocating = ref(false)
 const filters = ref({kinds: [], stepFree: false, unconfirmedOnly: false})
 const isOutsideCity = ref(false)
-const selected = shallowRef(null)
+
 const cityBounds = shallowRef(null)
 const isReady = ref(false)
 const isTiling = ref(false)
 const {city} = useCity()
 const {places, isLoading, error, loadBounds} = usePlacesNearby()
+const {uid, selectPlace, closePlace} = useSelectedPlace()
+const selected = shallowRef(null)
+
+/* `places` тримає лише те, що у видимій області, тому шукати вибраний заклад
+   там можна рівно один раз. Далі його треба тримати: інакше відвів карту —
+   заклад вийшов із box — і картка зникла, хоча `?place=` в адресі лишився. */
+async function resolveSelected() {
+  if (!uid.value) {
+    selected.value = null
+    return
+  }
+
+  if (selected.value?.uid === uid.value) return
+
+  const wanted = uid.value
+  const nearby = places.value.find((place) => place.uid === wanted)
+
+  if (nearby) {
+    selected.value = nearby
+    return
+  }
+
+  const fromBundle = city.value ? await placeByUid(city.value, wanted) : null
+
+  if (uid.value === wanted) selected.value = fromBundle
+}
+
+watch([places, uid], resolveSelected, {immediate: true})
 
 const layers = new Map()
 
@@ -54,6 +86,11 @@ const statusText = computed(() => {
 })
 
 let moveTimer = null
+
+/* Прийшли по посиланню на заклад — людина не бачила попереднього стану карти,
+   тож переліт їй нічого не показує. Гірше: він накладається на fitBounds, і
+   цей конфлікт видно як «іноді працює». */
+let arriving = Boolean(uid.value)
 
 /* ---------- geolocation ---------- */
 
@@ -79,7 +116,7 @@ function showUser(lat, lng) {
   }).addTo(map.value)
 }
 
-function locate() {
+function locate({recenter = true} = {}) {
   if (!navigator.geolocation) return
 
   isLocating.value = true
@@ -97,7 +134,8 @@ function locate() {
 
         isOutsideCity.value = false
         showUser(coords.latitude, coords.longitude)
-        map.value?.setView([coords.latitude, coords.longitude], LOCATED_ZOOM)
+
+        if (recenter) map.value?.setView([coords.latitude, coords.longitude], LOCATED_ZOOM)
       },
       (err) => {
         isLocating.value = false
@@ -154,14 +192,28 @@ function buildItems() {
   if (!instance) return []
 
   const zoom = instance.getZoom()
-  const list = places.value.filter(passesFilters)
+  const chosen = selected.value
+
+  /* Вибраний береться зі `selected`, а не зі списку: він мусить лишатись на
+     карті, навіть коли вийшов за межі завантаженої області. Заодно в кластер
+     він не потрапляє — людина дивиться на його картку. */
+  const pinned = chosen
+      ? [{key: `p:${chosen.id}`, place: chosen, latlng: [chosen.lat, chosen.lng]}]
+      : []
+
+  const list = places.value.filter(
+      (place) => place.uid !== chosen?.uid && passesFilters(place),
+  )
 
   if (zoom >= CLUSTER_UNTIL_ZOOM) {
-    return list.map((place) => ({
-      key: `p:${place.id}`,
-      place,
-      latlng: [place.lat, place.lng],
-    }))
+    return [
+      ...pinned,
+      ...list.map((place) => ({
+        key: `p:${place.id}`,
+        place,
+        latlng: [place.lat, place.lng],
+      })),
+    ]
   }
 
   const cells = new Map()
@@ -182,7 +234,7 @@ function buildItems() {
     }
   }
 
-  return [...cells.values()].map((cell) => {
+  return [...pinned, ...[...cells.values()].map((cell) => {
     const count = cell.places.length
 
     if (count === 1) {
@@ -197,14 +249,7 @@ function buildItems() {
       places: cell.places,
       latlng: [cell.latSum / count, cell.lngSum / count],
     }
-  })
-}
-
-function googleMapsUrl(place) {
-  const query = `${place.lat},${place.lng}`
-  return place.gid
-      ? `https://www.google.com/maps/search/?api=1&query=${query}&query_place_id=${place.gid}`
-      : `https://www.google.com/maps/search/?api=1&query=${query}`
+  })]
 }
 
 /* ---------- render ---------- */
@@ -223,16 +268,26 @@ function markerFor(item) {
     }).on('click', () => zoomToCluster(item))
   }
 
+  const on = item.place.uid === uid.value ? ' poi-dot--on' : ''
+
   return L.marker(item.latlng, {
     icon: L.divIcon({
       className: '',
-      html: `<div class="poi-dot poi-dot--${item.place.kind}"><span class="poi-dot__icon">${kindMarkerHtml(item.place.kind)}</span><span class="poi-dot__name">${escapeHtml(item.place.name)}</span></div>`,
+      html: `<div class="poi-dot poi-dot--${item.place.kind}${on}"><span class="poi-dot__icon">${kindMarkerHtml(item.place.kind)}</span><span class="poi-dot__name">${escapeHtml(item.place.name)}</span></div>`,
       iconSize: [DOT_SIZE, DOT_SIZE],
     }),
     keyboard: false,
   }).on('click', () => {
-    selected.value = item.place
+    selectPlace(item.place.uid)
   })
+}
+
+function highlight(place, on) {
+  if (!place) return
+
+  const dot = layers.get(`p:${place.id}`)?.getElement()?.querySelector('.poi-dot')
+
+  dot?.classList.toggle('poi-dot--on', on)
 }
 
 function renderItems() {
@@ -281,9 +336,9 @@ async function enterCity(id) {
   cityBounds.value = L.latLngBounds([south, west], [north, east]).pad(COVERAGE_PAD)
 
   applyPanBounds()
-  map.value.fitBounds(cityBounds.value)
+  map.value.fitBounds(cityBounds.value, {animate: false})
 
-  locate()
+  locate({recenter: !uid.value})
   loadPlaces()
 }
 
@@ -330,17 +385,37 @@ function onMapMove() {
 }
 
 watch(places, renderItems)
-watch(filters, renderItems)
+watch(filters, () => {
+  closePlace()
+  renderItems()
+})
 
-/* Момент готовності — коли доїхало саме останнє завантаження. Раніше шторка
-   знімалась одразу після першого `await loadPlaces()`, а `fitBounds` встигав
-   зрушити карту й запустити друге, яке скасовувало перше. Тобто ми чекали на
-   запит, який сам себе відмінив, і показували порожню карту. */
 watch(isLoading, (busy) => {
   if (!busy) markReady('places')
 })
 watch(city, (id) => {
   if (id) enterCity(id)
+})
+
+watch(selected, (place, before) => {
+  /* Набір міток залежить від вибору: щойно вибраний виходить із кластера,
+     а колишній — вертається в нього. Без перебудови це побачив би лише
+     наступний рух карти. */
+  renderItems()
+
+  highlight(before, false)
+  highlight(place, true)
+
+  if (!place) return
+
+  const jump = arriving || REDUCED_MOTION.matches
+
+  arriving = false
+
+  map.value?.flyTo([place.lat, place.lng], PLACE_ZOOM, {
+    duration: 0.8,
+    animate: !jump,
+  })
 })
 
 
@@ -359,9 +434,6 @@ onMounted(() => {
 
   const basemap = maplibreGL({
     style: `${import.meta.env.BASE_URL}map/style.json`,
-    /* Плагін сам збирає підпис із джерел стилю, але про наші дані він не знає.
-       Overture роздається під CDLA-Permissive, яка вимагає зазначати джерело
-       при роздачі — а ми віддаємо з неї телефони, сайти й соцмережі. */
     attributionControl: {
       customAttribution:
           '© OpenStreetMap contributors · © Overture Maps · OpenFreeMap · OpenMapTiles',
@@ -372,8 +444,6 @@ onMounted(() => {
 
   gl.once('idle', () => markReady('style'))
 
-  /* Тайли догружаються й після того, як шторка злетіла достроково. Поки це
-     триває, чесніше сказати про це рядком, ніж малювати мітки на порожнечі. */
   gl.on('idle', () => {
     isTiling.value = false
   })
@@ -383,6 +453,7 @@ onMounted(() => {
   map.value.on('moveend', onMapMove)
   map.value.on('zoomend', onMapMove)
   map.value.on('resize', applyPanBounds)
+  map.value.on('click', closePlace)
   armReadyFallback()
 
   if (city.value) enterCity(city.value)
@@ -400,10 +471,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="map-wrap">
-    <div ref="container" class="map-canvas"></div>
+  <div class="map-canvas">
+    <div ref="container" class="map-canvas__viewport"></div>
 
-    <div v-if="statusText" class="map-status" :class="{ 'is-error': error }">
+    <div v-if="statusText" class="map-canvas__status" :class="{ 'map-canvas__status--error': error }">
       {{ statusText }}
     </div>
 
@@ -413,148 +484,67 @@ onUnmounted(() => {
 
     <MapFilters v-model="filters"/>
 
-    <Tooltip class="locate-slot" :text="LOCATE_TIP" side="top">
+    <Tooltip class="map-canvas__locate" :text="LOCATE_TIP" side="top">
       <button
-          class="locate-btn"
-          :class="{ 'is-busy': isLocating }"
+          class="btn map-canvas__locate-btn"
+          :class="{ 'map-canvas__locate-btn--busy': isLocating }"
           aria-label="Моє місце"
-          @click="locate"
+          @click="locate()"
       >
         <i class="fa-solid fa-location-crosshairs"></i>
       </button>
     </Tooltip>
-
-    <div v-if="selected" class="place-card">
-      <div class="place-card__name">{{ selected.name }}</div>
-      <div class="place-card__meta">
-        {{ kindLabel(selected.kind) }}
-        <template v-if="selected.address"> · {{ selected.address }}</template>
-      </div>
-
-      <a
-          class="place-card__link"
-          :href="googleMapsUrl(selected)"
-          target="_blank"
-          rel="noopener noreferrer"
-      >
-        <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
-        Показати на Google Maps
-      </a>
-      <button class="place-card__close" aria-label="Закрити" @click="selected = null">×</button>
-    </div>
+    <MenuWrapper :place="selected" @close="closePlace"/>
   </div>
 </template>
 
 <style scoped>
-.loader-leave-active {
-  transition: opacity 0.45s var(--ease);
-}
-
-.loader-leave-to {
-  opacity: 0;
-}
-
-.map-wrap {
-  position: absolute;
-  inset: 0;
-}
-
 .map-canvas {
   position: absolute;
   inset: 0;
+}
+
+.map-canvas__viewport {
+  position: absolute;
+  inset: 0 0 0 var(--panel-w);
   z-index: var(--z-map);
 }
 
-.map-status {
+.map-canvas__status {
   position: absolute;
   top: var(--pad);
   left: var(--pad);
   z-index: var(--z-ui);
-  padding: 7px 14px;
-  border-radius: 99px;
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-pill);
   background: var(--card);
   border: 1px solid var(--line);
-  box-shadow: 0 1px 6px rgb(0 0 0 / 8%);
+  box-shadow: var(--shadow-1);
   font-size: 13px;
   color: var(--ink-2);
   white-space: nowrap;
 }
 
-.map-status.is-error {
+.map-canvas__status--error {
   color: var(--plum);
   background: var(--plum-bg);
   border-color: var(--plum-bg);
 }
 
-.locate-slot {
+.map-canvas__locate {
   position: absolute;
   right: var(--pad);
   bottom: var(--pad);
   z-index: var(--z-ui);
 }
 
-.locate-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
-  border-radius: var(--r);
-  background: var(--card);
-  border: 1px solid var(--line);
-  box-shadow: 0 1px 6px rgb(0 0 0 / 8%);
+.map-canvas__locate-btn {
+  padding: var(--s-3);
   font-size: 18px;
   color: var(--ink-2);
 }
 
-.locate-btn.is-busy {
+.map-canvas__locate-btn--busy {
   opacity: 0.5;
-}
-
-.place-card {
-  position: absolute;
-  left: var(--pad);
-  right: calc(var(--pad) * 2 + 42px);
-  bottom: var(--pad);
-  z-index: var(--z-panel);
-  padding: 12px 34px 12px 14px;
-  border-radius: var(--r-lg);
-  background: var(--card);
-  border: 1px solid var(--line);
-  box-shadow: 0 4px 16px rgb(0 0 0 / 12%);
-}
-
-.place-card__name {
-  font-weight: 500;
-}
-
-.place-card__meta {
-  font-size: 13px;
-  color: var(--ink-3);
-}
-
-.place-card__link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 8px;
-  color: var(--plum);
-  font-size: 13px;
-  font-weight: 500;
-}
-
-@media (hover: hover) {
-  .place-card__link:hover {
-    text-decoration: underline;
-  }
-}
-
-.place-card__close {
-  position: absolute;
-  top: 6px;
-  right: 10px;
-  font-size: 20px;
-  line-height: 1;
-  color: var(--ink-3);
 }
 </style>

@@ -37,8 +37,8 @@ function toggleUnconfirmed() {
       <button
           v-for="kind in KINDS"
           :key="kind"
-          class="chip"
-          :class="{ 'is-on': filters.kinds.includes(kind) }"
+          class="btn map-filters__chip"
+          :class="{ 'btn--on': filters.kinds.includes(kind) }"
           :aria-pressed="filters.kinds.includes(kind)"
           :data-kind="kind"
           @click="toggleKind(kind)"
@@ -50,8 +50,8 @@ function toggleUnconfirmed() {
 
     <Tooltip :text="ACCESS_TIP" v-slot="{ id }">
       <button
-          class="chip chip--access"
-          :class="{ 'is-on': filters.stepFree }"
+          class="btn map-filters__chip map-filters__chip--access"
+          :class="{ 'btn--on': filters.stepFree }"
           :aria-pressed="filters.stepFree"
           :aria-describedby="id"
           @click="toggleStepFree"
@@ -64,8 +64,8 @@ function toggleUnconfirmed() {
     <div class="map-filters__admin">
       <Tooltip :text="UNCONFIRMED_TIP" v-slot="{ id }">
         <button
-            class="chip chip--muted"
-            :class="{ 'is-on': filters.unconfirmedOnly }"
+            class="btn map-filters__chip map-filters__chip--muted"
+            :class="{ 'btn--on': filters.unconfirmedOnly }"
             :aria-pressed="filters.unconfirmedOnly"
             :aria-describedby="id"
             @click="toggleUnconfirmed"
@@ -87,68 +87,40 @@ function toggleUnconfirmed() {
   z-index: var(--z-ui);
   display: flex;
   align-items: flex-start;
-  gap: var(--gap-lg);
+  gap: var(--s-3);
 }
 
 .map-filters__kinds {
   display: flex;
-  gap: var(--gap);
+  gap: var(--s-2);
 }
 
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 36px;
-  padding: 0 14px;
-  border-radius: 999px;
-  background: var(--card);
-  border: 1px solid var(--line);
-  box-shadow: 0 1px 6px rgb(0 0 0 / 8%);
-  color: var(--ink);
-  font-size: 14px;
-  font-weight: 500;
-  white-space: nowrap;
-  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+.map-filters__chip[data-kind='cafe'] {
+  --btn-accent: var(--kind-cafe);
 }
 
-.chip:hover {
-  border-color: var(--line-2);
+.map-filters__chip[data-kind='restaurant'] {
+  --btn-accent: var(--kind-restaurant);
 }
 
-.chip.is-on {
-  color: #fff;
-  border-color: transparent;
+.map-filters__chip[data-kind='bar'] {
+  --btn-accent: var(--kind-bar);
 }
 
-.chip.is-on[data-kind='cafe'] {
-  background: var(--kind-cafe);
+.map-filters__chip[data-kind='pub'] {
+  --btn-accent: var(--kind-pub);
 }
 
-.chip.is-on[data-kind='restaurant'] {
-  background: var(--kind-restaurant);
+.map-filters__chip[data-kind='fast_food'] {
+  --btn-accent: var(--kind-fast_food);
 }
 
-.chip.is-on[data-kind='bar'] {
-  background: var(--kind-bar);
-}
-
-.chip.is-on[data-kind='pub'] {
-  background: var(--kind-pub);
-}
-
-.chip.is-on[data-kind='fast_food'] {
-  background: var(--kind-fast_food);
-}
-
-.chip--access.is-on {
-  background: var(--ink);
-  border-color: transparent;
+.map-filters__chip--access {
+  --btn-accent: var(--ink);
 }
 
 /* Сірий, а не кольоровий: ця кнопка не про тип закладу, вона послаблює фільтр. */
-.chip--muted.is-on {
-  background: var(--ink-3);
-  border-color: transparent;
+.map-filters__chip--muted {
+  --btn-accent: var(--ink-3);
 }
 </style>

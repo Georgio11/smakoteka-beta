@@ -10,6 +10,8 @@
     "fetch:places": "node pipeline/scripts/fetch-places.js",
     "resolve:places": "node pipeline/scripts/resolve-place-ids.js",
     "sync:overture": "node pipeline/scripts/sync-overture.js",
+    "fetch:photos": "node pipeline/scripts/fetch-photos.js",
+    "fetch:logos": "node pipeline/scripts/fetch-logos.js",
     "build:style": "node scripts/build-map-style.js",
     "build:icons": "node scripts/build-icons.js"
   },

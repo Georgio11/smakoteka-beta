@@ -9,15 +9,49 @@
   src: url('../fonts/icons.woff2') format('woff2');
 }
 
-.fa-solid {
-  display: inline-block;
+@font-face {
   font-family: 'Smakoteka Icons';
-  font-weight: 900;
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('../fonts/icons-regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Smakoteka Brands';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('../fonts/icons-brands.woff2') format('woff2');
+}
+
+.fa-solid,
+.fa-regular,
+.fa-brands {
+  display: inline-block;
   font-style: normal;
   font-variant: normal;
   line-height: 1;
   text-rendering: auto;
   -webkit-font-smoothing: antialiased;
+}
+
+.fa-solid,
+.fa-regular {
+  font-family: 'Smakoteka Icons';
+}
+
+.fa-solid {
+  font-weight: 900;
+}
+
+.fa-regular {
+  font-weight: 400;
+}
+
+.fa-brands {
+  font-family: 'Smakoteka Brands';
+  font-weight: 400;
 }
 
 .fa-mug-saucer::before {
@@ -58,4 +92,96 @@
 
 .fa-arrow-up-right-from-square::before {
   content: '\f08e';
+}
+
+.fa-map::before {
+  content: '\f279';
+}
+
+.fa-circle-user::before {
+  content: '\f2bd';
+}
+
+.fa-magnifying-glass::before {
+  content: '\f002';
+}
+
+.fa-check::before {
+  content: '\f00c';
+}
+
+.fa-bookmark::before {
+  content: '\f02e';
+}
+
+.fa-copy::before {
+  content: '\f0c5';
+}
+
+.fa-arrow-left::before {
+  content: '\f060';
+}
+
+.fa-face-meh::before {
+  content: '\f11a';
+}
+
+.fa-face-smile::before {
+  content: '\f118';
+}
+
+.fa-face-smile-beam::before {
+  content: '\f5b8';
+}
+
+.fa-phone::before {
+  content: '\f095';
+}
+
+.fa-earth-americas::before {
+  content: '\f57c';
+}
+
+.fa-clock::before {
+  content: '\f017';
+}
+
+.fa-chevron-down::before {
+  content: '\f078';
+}
+
+.fa-chevron-up::before {
+  content: '\f077';
+}
+
+.fa-seedling::before {
+  content: '\f4d8';
+}
+
+.fa-sun::before {
+  content: '\f185';
+}
+
+.fa-instagram::before {
+  content: '\f16d';
+}
+
+.fa-facebook-f::before {
+  content: '\f39e';
+}
+
+.fa-x-twitter::before {
+  content: '\e61b';
+}
+
+.fa-telegram::before {
+  content: '\f2c6';
+}
+
+.fa-tiktok::before {
+  content: '\e07b';
+}
+
+.fa-youtube::before {
+  content: '\f167';
 }

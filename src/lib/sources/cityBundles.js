@@ -4,6 +4,7 @@ const BASE = `${import.meta.env.BASE_URL}places`
 
 let manifestPromise = null
 const bundlePromises = new Map()
+const uidIndexes = new Map()
 
 export function loadManifest() {
     manifestPromise ??= fetch(`${BASE}/index.json`)
@@ -36,6 +37,29 @@ export async function tilesOf(key, signal) {
     if (!bundle) return null
 
     return loadBundle(bundle, signal)
+}
+
+export async function placeByUid(cityId, uid) {
+    const { bundles } = await loadManifest()
+    const bundle = bundles.find((item) => item.id === cityId)
+
+    if (!bundle) return null
+
+    const byTile = await loadBundle(bundle)
+
+    let index = uidIndexes.get(cityId)
+
+    if (!index) {
+        index = new Map()
+
+        for (const places of byTile.values()) {
+            for (const place of places) index.set(place.uid, place)
+        }
+
+        uidIndexes.set(cityId, index)
+    }
+
+    return index.get(uid) ?? null
 }
 
 async function bundleForTile(key) {

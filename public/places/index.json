@@ -12,8 +12,8 @@
       ],
       "count": 4159,
       "confirmed": 2411,
-      "version": "c7626421",
-      "updatedAt": "2026-08-26"
+      "version": "9344de17",
+      "updatedAt": "2026-08-28"
     },
     {
       "id": "lviv",
@@ -27,8 +27,8 @@
       ],
       "count": 1443,
       "confirmed": 0,
-      "version": "07ed690d",
-      "updatedAt": "2026-08-26"
+      "version": "8aa0780d",
+      "updatedAt": "2026-08-28"
     },
     {
       "id": "dnipro",
@@ -42,8 +42,8 @@
       ],
       "count": 684,
       "confirmed": 344,
-      "version": "d2a402e4",
-      "updatedAt": "2026-08-26"
+      "version": "e97d467c",
+      "updatedAt": "2026-08-28"
     },
     {
       "id": "kharkiv",
@@ -57,8 +57,8 @@
       ],
       "count": 1306,
       "confirmed": 0,
-      "version": "344fbfec",
-      "updatedAt": "2026-08-26"
+      "version": "54098316",
+      "updatedAt": "2026-08-28"
     }
   ]
 }
