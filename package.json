@@ -17,6 +17,7 @@
     "build:style": "node scripts/build-map-style.js",
     "build:icons": "node scripts/build-icons.js",
     "review:text": "node pipeline/scripts/review-text.js",
+    "review:status": "node pipeline/scripts/review-status.js",
     "edit:places": "node pipeline/scripts/edit-places.js"
   },
   "dependencies": {
