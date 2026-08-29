@@ -1,5 +1,3 @@
-/* Українське число: 1 місце, 2 місця, 5 місць, 11 місць, 21 місце.
- * Форми передаються трійкою: [одне, кілька, багато]. */
 export function plural(count, [one, few, many]) {
     const mod100 = Math.abs(count) % 100
     const mod10 = mod100 % 10

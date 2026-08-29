@@ -24,7 +24,6 @@ const emit = defineEmits(['close'])
 
 const {resetTab} = useMapTab()
 
-
 function pickTab(id) {
   tab.value = id
   resetTab()

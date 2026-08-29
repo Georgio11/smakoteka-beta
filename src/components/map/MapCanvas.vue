@@ -55,9 +55,6 @@ const {resetTab} = useMapTab()
 const {shown} = useMapCount()
 const selected = shallowRef(null)
 
-/* `places` тримає лише те, що у видимій області, тому шукати вибраний заклад
-   там можна рівно один раз. Далі його треба тримати: інакше відвів карту —
-   заклад вийшов із box — і картка зникла, хоча `?place=` в адресі лишився. */
 async function resolveSelected() {
   if (!uid.value) {
     selected.value = null
@@ -95,12 +92,7 @@ const statusText = computed(() => {
 
 let moveTimer = null
 
-/* Прийшли по посиланню на заклад — людина не бачила попереднього стану карти,
-   тож переліт їй нічого не показує. Гірше: він накладається на fitBounds, і
-   цей конфлікт видно як «іноді працює». */
 let arriving = Boolean(uid.value)
-
-/* ---------- geolocation ---------- */
 
 function showUser(lat, lng) {
   if (!map.value) return
@@ -114,8 +106,7 @@ function showUser(lat, lng) {
     icon: L.divIcon({
       className: '',
       html: '<i class="fa-solid fa-map-pin user-pin" aria-hidden="true"></i>',
-      /* Вістря шпильки внизу посередині — туди й ставимо якір, інакше мітка
-         вказувала б на місце вище за реальне. */
+
       iconSize: [22, 26],
       iconAnchor: [11, 26],
     }),
@@ -157,14 +148,11 @@ function locate({recenter = true} = {}) {
   )
 }
 
-/* ---------- filter ---------- */
-
 function passesFilters(place) {
   const {kinds, stepFree, unconfirmedOnly} = filters.value
   if (kinds.length && !kinds.includes(place.kind)) return false
   if (stepFree && place.wheelchair !== 'yes') return false
-  // TEMPORARY: the chip swaps between two disjoint sets — confirmed by default,
-  // unconfirmed on demand. Meant for inspection until we rank places by zoom.
+
   if (unconfirmedOnly ? place.confirmed : !place.confirmed) return false
   return true
 }
@@ -174,9 +162,6 @@ const shownCount = computed(() => cityList.value.filter(passesFilters).length)
 watchEffect(() => {
   shown.value = shownCount.value
 })
-
-
-/* ---------- готовність ---------- */
 
 let hasStyle = false
 let hasPlaces = false
@@ -192,9 +177,6 @@ function markReady(what) {
   isReady.value = true
 }
 
-/* Шторка не має права висіти вічно: якщо тайли або бандл не приїхали,
-   через READY_FALLBACK показуємо те, що є. Порожня карта чесніша за
-   нескінченне очікування. */
 function armReadyFallback() {
   clearTimeout(readyTimer)
   readyTimer = setTimeout(() => {
@@ -203,8 +185,6 @@ function armReadyFallback() {
   }, READY_FALLBACK)
 }
 
-/* ---------- clustering ---------- */
-
 function buildItems() {
   const instance = map.value
   if (!instance) return []
@@ -212,9 +192,6 @@ function buildItems() {
   const zoom = instance.getZoom()
   const chosen = selected.value
 
-  /* Вибраний береться зі `selected`, а не зі списку: він мусить лишатись на
-     карті, навіть коли вийшов за межі завантаженої області. Заодно в кластер
-     він не потрапляє — людина дивиться на його картку. */
   const pinned = chosen
       ? [{key: `p:${chosen.id}`, place: chosen, latlng: [chosen.lat, chosen.lng]}]
       : []
@@ -269,8 +246,6 @@ function buildItems() {
     }
   })]
 }
-
-/* ---------- render ---------- */
 
 function markerFor(item) {
   if (item.count) {
@@ -336,15 +311,11 @@ function zoomToCluster(item) {
   map.value?.fitBounds(bounds.pad(0.2), {maxZoom: CLUSTER_UNTIL_ZOOM})
 }
 
-/* ---------- coverage ---------- */
-
 async function enterCity(id) {
   const box = await cityBox(id)
 
   if (!box || !map.value) return
 
-  /* Нове місто — нові дані, тож шторка повертається: інакше при перемиканні
-     людина дивилась би на чужі мітки, поки приїдуть свої. */
   hasPlaces = false
   isReady.value = false
   armReadyFallback()
@@ -359,7 +330,6 @@ async function enterCity(id) {
   locate({recenter: !uid.value})
   loadPlaces()
 }
-
 
 function applyPanBounds() {
   const instance = map.value
@@ -385,8 +355,6 @@ function viewAt(zoom, center) {
   )
 }
 
-/* ---------- loading ---------- */
-
 async function loadPlaces() {
   const instance = map.value
   if (!instance) return
@@ -409,7 +377,6 @@ watch(filters, () => {
   renderItems()
 })
 
-
 watch(isLoading, (busy) => {
   if (!busy) markReady('places')
 })
@@ -418,9 +385,7 @@ watch(city, (id) => {
 })
 
 watch(selected, (place, before) => {
-  /* Набір міток залежить від вибору: щойно вибраний виходить із кластера,
-     а колишній — вертається в нього. Без перебудови це побачив би лише
-     наступний рух карти. */
+
   renderItems()
 
   highlight(before, false)
@@ -444,8 +409,6 @@ watch(city, async (id) => {
 
   if (city.value === wanted) cityList.value = list
 }, {immediate: true})
-
-/* ---------- lifecycle ---------- */
 
 onMounted(async () => {
   map.value = L.map(container.value, {
@@ -473,7 +436,6 @@ onMounted(async () => {
     return null
   })
 
-  /* Стиль їде мережею, а за цей час компонент могли зняти. */
   if (!style || !map.value) {
     markReady('style')
     return

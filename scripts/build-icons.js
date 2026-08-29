@@ -1,17 +1,3 @@
-/* Підмножина Font Awesome. Повний solid важить 119 КБ і на 3G їде секунд пʼять,
- * хоча ми використовуємо з нього два десятки іконок. Скрипт вирізає саме їх і
- * заодно генерує стилі, щоб карта «клас -> символ» жила в одному місці.
- *
- * Родину перейменовано: шрифт FA роздається під SIL OFL, а модифікованій версії
- * не годиться лишати оригінальну назву.
- *
- * Дві ваги, як у самого FA: одна родина, solid це 900, regular це 400. Коди
- * гліфів у них однакові, тому `content` оголошується раз, а вагу вибирає клас.
- *
- * Використання:
- *   npm run build:icons
- */
-
 import { readFile, writeFile, mkdir, readdir } from 'node:fs/promises'
 import subsetFont from 'subset-font'
 
@@ -21,8 +7,6 @@ const CSS_OUT = './src/assets/styles/_icons.scss'
 const FAMILY = 'Smakoteka Icons'
 const BRANDS_FAMILY = 'Smakoteka Brands'
 
-/* Клас -> символ у шрифті. Додаєш іконку в шаблони — додаєш рядок сюди,
- * інакше в бандлі її просто не буде. Коди беруться з css/all.css пакета. */
 const ICONS = {
     'mug-saucer': 'f0f4',
     'utensils': 'f2e7',
@@ -54,10 +38,6 @@ const ICONS = {
     'sun': 'f185',
 }
 
-/* Логотипи мереж — окрема родина, а не третя вага. У Font Awesome бренди
- * лежать у власному файлі й теж важать 400: підклавши їх під `Smakoteka Icons`,
- * ми зіткнули б їх з контурними, і браузер малював би те, що завантажилось
- * пізніше. Коди беруться звідти ж, з css/all.css. */
 const BRANDS = {
     'instagram': 'f16d',
     'facebook-f': 'f39e',
@@ -67,9 +47,6 @@ const BRANDS = {
     'youtube': 'f167',
 }
 
-/* Кого додатково вирізаємо контурним. Solid тримає всі іконки, бо він базовий;
- * regular — лише ті, де контур доречний: залиті обличчя виглядають масивно, а
- * закладка перемикається контур -> заливка, тому потрібна в обох вагах. */
 const REGULAR = new Set(['face-meh', 'face-smile', 'face-smile-beam', 'copy', 'bookmark', 'clock'])
 
 const solidNames = Object.keys(ICONS)
@@ -165,9 +142,6 @@ ${rules}
 `
 }
 
-/* Найчастіша помилка з цим шрифтом: клас іконки додали в шаблон, а рядок сюди —
- * ні. Гліфа в підмножині немає, `content` не оголошений, і елемент рендериться
- * порожнім — без помилки в консолі й без жодного натяку, що не так. */
 async function reportMissing() {
     const files = await readdir('./src', { recursive: true })
     const used = new Set()
@@ -182,14 +156,10 @@ async function reportMissing() {
             if (!['solid', 'regular', 'brands'].includes(name)) used.add(name)
         }
 
-        /* `fa-regular` на іконці, якої немає в контурному сабсеті — порожній
-           елемент без жодної помилки. Solid не перевіряємо: він тримає все. */
         for (const [, name] of text.matchAll(/fa-regular"[^>]*?fa-([a-z0-9-]+)/g)) {
             if (!REGULAR.has(name)) wrongWeight.add(`fa-regular fa-${name}`)
         }
 
-        /* Логотип під `fa-solid` і звичайна іконка під `fa-brands` — та сама
-           порожнеча: родини різні, гліфа в чужій немає. */
         for (const [, name] of text.matchAll(/fa-brands"[^>]*?fa-([a-z0-9-]+)/g)) {
             if (!(name in BRANDS)) wrongWeight.add(`fa-brands fa-${name}`)
         }

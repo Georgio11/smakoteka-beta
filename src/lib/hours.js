@@ -1,17 +1,3 @@
-/* Розбір `opening_hours` з OSM. Своя реалізація, а не бібліотека: після того
- * як пайплайн викинув усе нічне, з 2645 рядків складними лишаються десятки, і
- * заради них не варто везти в браузер календарі свят усіх країн світу.
- *
- * Підтримується те, що справді трапляється в наших даних:
- *   Mo-Su 12:00-22:00
- *   Mo-Fr 09:00-14:00,15:00-19:00
- *   Mo-Fr 07:30-19:00; Sa 09:00-18:30; Su off
- *   11:00-23:00                      без днів — отже щодня
- *   Mo-Su,PH 10:00-22:00             PH (свята) ігноруємо
- *
- * Розібрати не вдалось — повертається null, і картка показує рядок як є.
- * Це навмисно: краще сирий текст, ніж вигадані години. */
-
 const DAY_CODES = ['mo', 'tu', 'we', 'th', 'fr', 'sa', 'su']
 
 export const DAYS = [
@@ -24,28 +10,20 @@ const TIME_ZONE = 'Europe/Kyiv'
 
 const SPAN = /^(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})$/
 
-/** Рядок -> сім наборів інтервалів, з понеділка. Кожен інтервал — хвилини від
- *  півночі: [[720, 1320]] це 12:00-22:00. Порожній набір — вихідний. */
 export function parseHours(text) {
     if (!text) return null
 
     const week = Array.from({ length: 7 }, () => [])
     let touched = false
 
-    /* «Su-We:11:00-22:00» — двокрапка замість пробілу після днів. Час чіпати не
-       можна, тому дивимось саме на межу «літери -> цифри». */
     const normalized = text.replace(/([a-z]{2})\s*:\s*(?=\d)/gi, '$1 ')
 
     for (const part of normalized.split(';')) {
-        /* Кома означає то одне, то інше: «Mo-Fr, Su 10:00-22:00» — перелік днів,
-           «Mo-Fr 09:00-14:00,15:00-19:00» — другий інтервал того ж дня,
-           «mo-fr 08:00-19:00, sa-su off» — взагалі окреме правило. Тому йдемо
-           шматками й дивимось, що саме в кожному. */
+
         const chunks = part.split(',').map((chunk) => chunk.trim().replace(/\+$/, '')).filter(Boolean)
 
-        /* Дні, які вже назвали, але часу для них ще не бачили. */
         let pending = []
-        /* Дні останнього правила — до них чіпляється інтервал без днів. */
+
         let current = null
 
         for (const chunk of chunks) {
@@ -75,7 +53,6 @@ export function parseHours(text) {
                 continue
             }
 
-            /* Дні й час в одному шматку: «Mo-Fr 09:00-18:00», «Su off». */
             const split = chunk.match(/^(\D+?)\s+(.+)$/)
 
             if (split) {
@@ -87,7 +64,6 @@ export function parseHours(text) {
 
                 pending = []
 
-                /* Самі лише свята — правила для них ми не показуємо. */
                 if (!all.length) continue
 
                 const rest = split[2].trim()
@@ -124,8 +100,6 @@ function isClosed(text) {
     return /^(off|closed)$/i.test(text.trim())
 }
 
-/** Порожній масив — тільки свята чи канікули, для нас це не день тижня.
- *  null — трапилось щось, чого ми не розуміємо, і краще не вгадувати. */
 function parseDays(text) {
     const days = new Set()
 
@@ -159,8 +133,6 @@ function parseSpan(text) {
     return [fromHour * 60 + fromMinute, toHour * 60 + toMinute]
 }
 
-/** Котра година в Києві, а не в браузері: заклади всі тут, а людина може
- *  дивитись звідки завгодно. */
 export function kyivNow(at = new Date()) {
     const parts = new Intl.DateTimeFormat('en-GB', {
         timeZone: TIME_ZONE,
@@ -176,7 +148,6 @@ export function kyivNow(at = new Date()) {
     return { day, minutes: Number(value('hour')) * 60 + Number(value('minute')) }
 }
 
-/** Відчинено зараз — і до котрої; якщо ні — коли відчиниться найближчим часом. */
 export function statusOf(week, now = kyivNow()) {
     const today = week[now.day] ?? []
     const open = today.find(([from, to]) => now.minutes >= from && now.minutes < to)

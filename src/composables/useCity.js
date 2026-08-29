@@ -20,4 +20,3 @@ export function useCity() {
 
     return {cityList, city, pickCity}
 }
-

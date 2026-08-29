@@ -14,7 +14,6 @@ const LABELS = {
     fast_food: 'Фастфуд',
 }
 
-/** Клас іконки Font Awesome — звичайний випадок, іде у :class. */
 export function kindIcon(kind) {
     return ICONS[kind] ?? ''
 }
@@ -23,7 +22,6 @@ export function kindLabel(kind) {
     return LABELS[kind] ?? kind
 }
 
-/** Готова розмітка для L.divIcon: Leaflet приймає HTML рядком, а не вузлом. */
 export function kindMarkerHtml(kind) {
     const icon = ICONS[kind]
 

@@ -37,7 +37,6 @@ const TABS = [
   </div>
 </template>
 
-
 <style lang="scss" scoped>
 .menu-map__btns {
   display: flex;

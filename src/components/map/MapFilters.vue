@@ -24,7 +24,6 @@ function toggleStepFree() {
   filters.value = {...filters.value, stepFree: !filters.value.stepFree}
 }
 
-// TEMPORARY: a chip is the stopgap; the plan is to rank places by zoom instead.
 function toggleUnconfirmed() {
   filters.value = {...filters.value, unconfirmedOnly: !filters.value.unconfirmedOnly}
 }
@@ -78,7 +77,6 @@ function toggleUnconfirmed() {
   </div>
 </template>
 
-
 <style scoped>
 .map-filters {
   position: absolute;
@@ -119,7 +117,6 @@ function toggleUnconfirmed() {
   --btn-accent: var(--ink);
 }
 
-/* Сірий, а не кольоровий: ця кнопка не про тип закладу, вона послаблює фільтр. */
 .map-filters__chip--muted {
   --btn-accent: var(--ink-3);
 }

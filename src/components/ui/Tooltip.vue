@@ -8,8 +8,8 @@ const FALLBACK_DELAY = 500
 
 const props = defineProps({
   text: {type: String, required: true},
-  side: {type: String, default: 'bottom'},   // 'bottom' | 'top'
-  align: {type: String, default: 'end'},     // 'end' | 'start'
+  side: {type: String, default: 'bottom'},
+  align: {type: String, default: 'end'},
 })
 
 const id = useId()
@@ -19,18 +19,12 @@ const rect = ref(null)
 
 let timer = null
 
-/* Бульбашка живе в body, тому координати беремо з тригера і ставимо position:
-   fixed — вона в тій самій системі, що getBoundingClientRect, отже прокрутку
-   враховувати не треба. Але при скролі рамка застаріває, тож перемірюємо. */
 function measure() {
   const found = anchor.value?.getBoundingClientRect()
 
   if (found) rect.value = found
 }
 
-/* Затримкою керує --tip-delay у main.scss — щоб час не жив у двох місцях.
-   Читаємо на наведенні, а не в setup: тіло <script setup> виконується для
-   кожного тултіпа окремо, тобто на сторінці це був би десяток замірів стилю. */
 function readDelay() {
   const raw = getComputedStyle(document.documentElement).getPropertyValue('--tip-delay')
 
@@ -44,8 +38,6 @@ function show(delay = null) {
     measure()
     open.value = true
 
-    /* capture: true — щоб ловити прокрутку будь-якого предка, а не лише вікна:
-       у нас бульбашка може висіти над панеллю, що скролиться сама. */
     window.addEventListener('scroll', measure, {capture: true, passive: true})
     window.addEventListener('resize', measure)
   }, delay ?? readDelay())
@@ -68,17 +60,12 @@ const style = computed(() => {
       ? {top: `${box.bottom + GAP}px`}
       : {bottom: `${window.innerHeight - box.top + GAP}px`}
 
-  /* Притискаємо бульбашку до того краю тригера, від якого вона росте всередину
-     екрана, і не даємо вилізти за межу вікна. */
   const offset = props.align === 'end'
       ? Math.max(EDGE, window.innerWidth - box.right)
       : Math.max(EDGE, box.left)
 
   const horizontal = props.align === 'end' ? {right: `${offset}px`} : {left: `${offset}px`}
 
-  /* Каретка дивиться в центр тригера, а не в край бульбашки: край може бути
-     зсунутий притисканням до вікна, і тоді вістря вказувало б у порожнє місце.
-     Рахуємо від того ж краю, до якого притиснута бульбашка. */
   const center = box.left + box.width / 2
   const edge = props.align === 'end' ? window.innerWidth - offset : offset
   const caret = Math.abs(edge - center) - CARET / 2
@@ -100,8 +87,6 @@ onUnmounted(hide)
   >
     <slot :id="id"/>
 
-    <!-- Teleport усередині, а не поруч: вузла в цьому місці він не створює,
-         зате корінь компонента лишається один і class знадвору доїжджає. -->
     <Teleport to="body">
       <Transition name="tip">
         <span
@@ -149,7 +134,6 @@ onUnmounted(hide)
   transform: rotate(45deg);
 }
 
-/* каретка завжди дивиться в протилежний від бульбашки бік */
 .tooltip__bubble--bottom::before { top: -3px; }
 .tooltip__bubble--top::before { bottom: -3px; }
 

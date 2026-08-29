@@ -3,9 +3,6 @@ import {createRouter, createWebHistory} from 'vue-router'
 import PickCityView from './view/PickCityView.vue'
 import MapLoader from './components/ui/MapLoader.vue'
 
-/* Карта тягне за собою leaflet і maplibre — дві третини бандла. Окремим чанком
- * вона не блокує екран вибору міста, а поки чанк їде, замість неї показується
- * той самий лоадер, що й потім усередині карти. */
 const MapView = defineAsyncComponent({
     loader: () => import('./view/MapView.vue'),
     loadingComponent: MapLoader,
@@ -45,4 +42,3 @@ router.beforeEach(async (to) => {
 })
 
 export default router
-
