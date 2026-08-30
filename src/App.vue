@@ -1,5 +1,6 @@
 <script setup>
 import MapLoader from '@/components/ui/MapLoader.vue'
+import Alert from '@/components/ui/Alert.vue'
 </script>
 
 <template>
@@ -7,4 +8,6 @@ import MapLoader from '@/components/ui/MapLoader.vue'
     <component :is="Component" v-if="Component"/>
     <MapLoader v-else/>
   </RouterView>
+
+  <Alert/>
 </template>

@@ -9,6 +9,7 @@ import {useCity} from '@/composables/useCity'
 import {useSelectedPlace} from '@/composables/useSelectedPlace'
 import {useMapTab} from '@/composables/useMapTab'
 import {useMapCount} from '@/composables/useMapCount'
+import {useAlert} from '@/composables/useAlert'
 import {kindMarkerHtml} from '@/components/map/kinds'
 import {escapeHtml} from '@/lib/html'
 import {cityBox, cityPlaces, placeByUid} from '@/lib/placesRepo'
@@ -89,6 +90,14 @@ const statusText = computed(() => {
 
   return ''
 })
+
+const {show: showAlert} = useAlert()
+
+/* Алярм спільний на весь застосунок, тож карта не малює його сама, а лише
+   каже, що показати. Йдучи з екрана — прибирає за собою: інакше на виборі
+   міста висіло б повідомлення про карту, якої вже немає. */
+watchEffect(() => showAlert(statusText.value, {error: Boolean(error.value || geoError.value)}))
+onUnmounted(() => showAlert(''))
 
 let moveTimer = null
 
@@ -473,9 +482,6 @@ onUnmounted(() => {
   <div class="map-canvas">
     <div ref="container" class="map-canvas__viewport"></div>
 
-    <div v-if="statusText" class="map-canvas__status" :class="{ 'map-canvas__status--error': error || geoError }">
-      {{ statusText }}
-    </div>
 
     <Transition name="loader">
       <MapLoader v-if="!isReady"/>
@@ -507,27 +513,6 @@ onUnmounted(() => {
   position: absolute;
   inset: 0 0 0 var(--panel-w);
   z-index: var(--z-map);
-}
-
-.map-canvas__status {
-  position: absolute;
-  top: var(--pad);
-  left: var(--pad);
-  z-index: var(--z-ui);
-  padding: var(--s-2) var(--s-3);
-  border-radius: var(--r-pill);
-  background: var(--card);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow-1);
-  font-size: 13px;
-  color: var(--ink-2);
-  white-space: nowrap;
-}
-
-.map-canvas__status--error {
-  color: var(--plum);
-  background: var(--plum-bg);
-  border-color: var(--plum-bg);
 }
 
 .map-canvas__locate {
