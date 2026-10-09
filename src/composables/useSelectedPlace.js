@@ -1,5 +1,5 @@
 import {computed} from 'vue'
-import {useRoute, useRouter} from 'vue-router'
+import {useRoute, useRouter} from '#imports'
 
 export function useSelectedPlace() {
     const route = useRoute()

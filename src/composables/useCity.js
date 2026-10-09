@@ -1,5 +1,5 @@
 import {computed, ref} from 'vue'
-import {useRoute, useRouter} from 'vue-router'
+import {useRoute, useRouter} from '#imports'
 import {cities} from '@/lib/placesRepo'
 
 const cityList = ref([])
