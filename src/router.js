@@ -1,5 +1,7 @@
 import {defineAsyncComponent} from 'vue'
 import {createRouter, createWebHistory} from 'vue-router'
+import {cities} from './lib/placesRepo'
+import {readLastCity, rememberCity} from './lib/lastCity'
 import PickCityView from './view/PickCityView.vue'
 import MapLoader from './components/ui/MapLoader.vue'
 
@@ -8,8 +10,6 @@ const MapView = defineAsyncComponent({
     loadingComponent: MapLoader,
     delay: 0,
 })
-import {cities} from './lib/placesRepo'
-import {readLastCity, rememberCity} from './lib/lastCity'
 
 const routes = [
     {path: '/', name: 'entry', redirect: {name: 'cities'}},
