@@ -4,9 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
+    "dev": "nuxt dev",
+    "build": "nuxt generate",
+    "build:app": "BUILD_TARGET=app nuxt generate",
+    "preview": "nuxt preview",
+    "cap:sync": "cap sync",
+    "postinstall": "nuxt prepare",
     "fetch:places": "node pipeline/scripts/fetch-places.js",
     "resolve:places": "node pipeline/scripts/resolve-place-ids.js",
     "replay:google": "node pipeline/scripts/replay-google.js",
@@ -23,17 +26,17 @@
     "edit:places": "node pipeline/scripts/edit-places.js"
   },
   "dependencies": {
+    "@capacitor/core": "^7.6.9",
     "@fortawesome/fontawesome-free": "^7.3.1",
     "@maplibre/maplibre-gl-leaflet": "^0.1.4",
     "leaflet": "^1.9.4",
     "maplibre-gl": "^5.24.0",
-    "vue": "^3.5.40",
-    "vue-router": "^5.2.0"
+    "nuxt": "~4.5.2",
+    "vue": "^3.5.40"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^6.0.8",
+    "@capacitor/cli": "^7.6.9",
     "sass": "^1.103.0",
-    "subset-font": "^2.5.0",
-    "vite": "^8.2.0"
+    "subset-font": "^2.5.0"
   }
 }

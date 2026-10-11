@@ -1,12 +1,5 @@
-import {computed, ref} from 'vue'
-import {useRoute, useRouter} from 'vue-router'
-import {cities} from '@/lib/placesRepo'
-
-const cityList = ref([])
-
-cities().then((loaded) => {
-    cityList.value = loaded
-})
+import {computed} from 'vue'
+import {useRoute, useRouter} from '#imports'
 
 export function useCity() {
     const route = useRoute()
@@ -18,5 +11,5 @@ export function useCity() {
         router.push(`/${id}`)
     }
 
-    return {cityList, city, pickCity}
+    return {city, pickCity}
 }

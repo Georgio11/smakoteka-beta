@@ -1,4 +1,5 @@
-const STYLE = `${import.meta.env.BASE_URL}map/style.json`
+const BASE = new URL(import.meta.env.BASE_URL, location.origin).href
+const STYLE = `${BASE}map/style.json`
 
 export async function basemapStyle() {
     const style = await fetch(STYLE).then((response) => {
@@ -7,7 +8,8 @@ export async function basemapStyle() {
         return response.json()
     })
 
-    style.sprite = new URL(style.sprite, location.origin).href
+    style.sprite = `${BASE}${style.sprite}`
+    style.glyphs = `${BASE}${style.glyphs}`
 
     return style
 }

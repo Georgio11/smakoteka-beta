@@ -7,8 +7,7 @@ const bundlePromises = new Map()
 const uidIndexes = new Map()
 
 export function loadManifest() {
-    manifestPromise ??= fetch(`${BASE}/index.json`)
-        .then((response) => (response.ok ? response.json() : null))
+    manifestPromise ??= readJson('index.json')
         .then((data) => (Array.isArray(data?.bundles) ? data : { bundles: [] }))
         .catch(() => ({ bundles: [] }))
 
@@ -76,12 +75,7 @@ function loadBundle(bundle, signal) {
     let promise = bundlePromises.get(bundle.id)
 
     if (!promise) {
-        promise = fetch(`${BASE}/${bundle.file}?v=${bundle.version}`, { signal })
-            .then((response) => {
-                if (!response.ok) throw new Error(`bundle ${bundle.id}: ${response.status}`)
-
-                return response.json()
-            })
+        promise = readJson(bundle.file, { version: bundle.version, signal })
             .then((places) => {
                 if (!Array.isArray(places)) throw new Error(`bundle ${bundle.id}: not a list`)
 
@@ -96,6 +90,21 @@ function loadBundle(bundle, signal) {
     }
 
     return promise
+}
+
+async function readJson(file, { version, signal } = {}) {
+    if (import.meta.server) {
+        const { readFile } = await import('node:fs/promises')
+
+        return JSON.parse(await readFile(`public/places/${file}`, 'utf8'))
+    }
+
+    const query = version ? `?v=${version}` : ''
+    const response = await fetch(`${BASE}/${file}${query}`, { signal })
+
+    if (!response.ok) throw new Error(`${file}: ${response.status}`)
+
+    return response.json()
 }
 
 function bucket(places) {

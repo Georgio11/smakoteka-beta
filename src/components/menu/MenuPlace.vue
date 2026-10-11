@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onUnmounted, ref} from 'vue'
+import {computed, onMounted, onUnmounted, ref, shallowRef} from 'vue'
 import {kindLabel} from '@/components/map/kinds'
 import Tooltip from '@/components/ui/Tooltip.vue'
 import placeholder from '@/assets/place-placeholder.svg'
@@ -84,12 +84,16 @@ const diet = computed(() => {
 
 const showHours = ref(false)
 
-const now = kyivNow()
+const now = shallowRef(null)
 const week = computed(() => parseHours(props.place.hours))
-const status = computed(() => (week.value ? statusOf(week.value, now) : null))
+const status = computed(() => (week.value && now.value ? statusOf(week.value, now.value) : null))
+
+onMounted(() => {
+  now.value = kyivNow()
+})
 
 const week7 = computed(() => Array.from({length: 7}, (item, shift) => {
-  const day = (now.day + shift) % 7
+  const day = (now.value.day + shift) % 7
 
   return {day, name: DAYS[day], time: formatSpans(week.value[day]) ?? 'Зачинено', today: shift === 0}
 }))
@@ -261,13 +265,13 @@ onUnmounted(() => {
           @click="showHours = !showHours"
       >
         <i class="fa-regular fa-clock" aria-hidden="true"></i>
-        <span class="menu-place__status" :class="{ 'menu-place__status--open': status.isOpen }">
+        <span v-if="status" class="menu-place__status" :class="{ 'menu-place__status--open': status.isOpen }">
           {{ showHours ? (status.isOpen ? 'Відчинено' : 'Зачинено') : statusText }}
         </span>
         <i class="fa-solid" :class="showHours ? 'fa-chevron-up' : 'fa-chevron-down'" aria-hidden="true"></i>
       </button>
 
-      <dl v-if="showHours" class="menu-place__week">
+      <dl v-if="showHours && now" class="menu-place__week">
         <template v-for="row in week7" :key="row.day">
           <dt :class="{ 'menu-place__day--today': row.today }">{{ row.name }}</dt>
           <dd>{{ row.time }}</dd>

@@ -1,4 +1,4 @@
-import { writeFile, mkdir, readFile } from 'node:fs/promises'
+import { writeFile, mkdir } from 'node:fs/promises'
 
 const SOURCE = 'https://tiles.openfreemap.org/styles/bright'
 const OUT_DIR = './public/map'
@@ -30,9 +30,7 @@ const total = style.layers.length
 style.name = 'Смакотека'
 style.layers = style.layers.filter((layer) => !DROP_LAYERS.includes(layer.id))
 
-const base = (await readFile('./vite.config.js', 'utf8')).match(/base:\s*'([^']+)'/)?.[1] ?? '/'
-
-style.glyphs = `${base}map/fonts/{fontstack}/{range}.pbf`
+style.glyphs = 'map/fonts/{fontstack}/{range}.pbf'
 
 let relabelled = 0
 let refonted = 0
@@ -77,7 +75,7 @@ for (const ext of ['json', 'png']) {
     await writeFile(`${SPRITE_DIR}/sprite.${ext}`, Buffer.from(await sprite.arrayBuffer()))
 }
 
-style.sprite = `${base}map/sprite/sprite`
+style.sprite = 'map/sprite/sprite'
 
 await mkdir(FONT_DIR, { recursive: true })
 
