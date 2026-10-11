@@ -62,6 +62,9 @@
     "osm:n10003860121": {
       "gid": "ChIJ…", "status": "OPERATIONAL", "score": 1,
       "checkedAt": "2026-08-28", "statusAt": "2026-08-29"
+    },
+    "osm:n10024831626": {
+      "gid": null, "checkedAt": "2026-08-28", "textAt": "2026-08-28"
     }
   }
 }
@@ -74,7 +77,7 @@
 | `removals` | `curated/dropped.json` | `source: manual` — викидає заклад із бандла й не питає Google |
 | `edits` | `curated/edits.json` | накладає поверх джерел останнім кроком |
 | `suspects` | `curated/closed-suspects.json` | вердикт `closed` викидає, `keep` більше не питає |
-| `googleLinks` | `curated/place-ids.json` | `gid` і статус; `CLOSED_PERMANENTLY` викидає з бандла |
+| `googleLinks` | `curated/place-ids.json` | `gid` і статус; `CLOSED_PERMANENTLY` викидає з бандла; `gid: null` з `textAt` — теж, але лишає в повному списку `data/places/` |
 | `merges` | `curated/dupe-suspects.json` | `same` зводить пару, `different` більше не питає |
 | `notOurs` | `curated/not-ours.json` | назви мереж, яких на карті не буває |
 | `aliases` | `curated/twins.json` | зайвий запис пари не потрапляє в бандл, дані переїжджають до того, що лишився |
@@ -162,3 +165,8 @@ POST /api/pipeline/runs/42/finish     → { rowsUpserted: 7592 }
 **Критерій, що міграція вдалась:** бандл, зібраний із бази, збігається з тим,
 що зараз лежить у `public/places/`, з точністю до порядку ключів. Поки не
 збігається — переїзду не сталось, і рухатись далі немає сенсу.
+
+Ця тека потрібна й самій збірці сайту: сторінки закладів (`/kyiv/<uid>`)
+пререндеряться з бандлів на диску (`scripts/site-pages.js` і `readJson` у
+`src/lib/sources/cityBundles.js`). Коли бандли переїдуть у базу, збірка мусить
+спершу покласти їх у `public/places/`, інакше сайт вийде без сторінок закладів.

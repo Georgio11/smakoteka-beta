@@ -1,23 +1,20 @@
 import {cities} from '@/lib/placesRepo'
-import {readLastCity, rememberCity} from '@/lib/lastCity'
+import {rememberCity} from '@/lib/lastCity'
 
 export default defineNuxtRouteMiddleware(async (to) => {
     if (!to.matched.length) return navigateTo({name: 'cities'})
 
-    const known = await cities()
-    const isKnown = (id) => known.some((city) => city.id === id)
-
-    if (to.name === 'cities') {
-        const saved = readLastCity()
-
-        if (isKnown(saved)) return navigateTo({name: 'city', params: {city: saved}})
-
-        return
-    }
-
     if (to.name !== 'city') return
 
-    if (!isKnown(to.params.city)) return navigateTo({name: 'cities'})
+    const known = await cities()
+
+    if (!known.some((city) => city.id === to.params.city)) return navigateTo({name: 'cities'})
+
+    if (to.query.place) {
+        const {place, ...query} = to.query
+
+        return navigateTo({name: 'city', params: {city: to.params.city, place}, query}, {replace: true})
+    }
 
     rememberCity(to.params.city)
 })

@@ -5,22 +5,18 @@ export function useSelectedPlace() {
     const route = useRoute()
     const router = useRouter()
 
-    const uid = computed(() => route.query.place ?? null)
+    const uid = computed(() => route.params.place || null)
 
     function selectPlace(next) {
         if (next === uid.value) return
 
-        router.push({query: {...route.query, place: next}})
+        router.push({name: 'city', params: {city: route.params.city, place: next}, query: route.query})
     }
 
     function closePlace() {
         if (!uid.value) return
 
-        const query = {...route.query}
-
-        delete query.place
-
-        router.push({query})
+        router.push({name: 'city', params: {city: route.params.city}, query: route.query})
     }
 
     return {uid, selectPlace, closePlace}

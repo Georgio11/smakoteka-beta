@@ -14,12 +14,24 @@ const LABELS = {
     fast_food: 'Фастфуд',
 }
 
+const NAMES = {
+    cafe: 'кафе',
+    restaurant: 'ресторан',
+    bar: 'бар',
+    pub: 'паб',
+    fast_food: 'фастфуд',
+}
+
 export function kindIcon(kind) {
     return ICONS[kind] ?? ''
 }
 
 export function kindLabel(kind) {
     return LABELS[kind] ?? kind
+}
+
+export function kindName(kind) {
+    return NAMES[kind] ?? kind
 }
 
 export function kindMarkerHtml(kind) {
