@@ -29,6 +29,7 @@ const COVERAGE_PAD = 0.04
 const PAN_SLACK = 0.25
 const MOVE_DEBOUNCE = 250
 const READY_FALLBACK = 12000
+const GEO_ERROR_FOR = 5000
 const DOT_SIZE = 30
 const CLUSTER_CELL = 68
 const CLUSTER_UNTIL_ZOOM = 16
@@ -100,6 +101,7 @@ watchEffect(() => showAlert(statusText.value, {error: Boolean(error.value || geo
 onUnmounted(() => showAlert(''))
 
 let moveTimer = null
+let geoErrorTimer = null
 
 let arriving = Boolean(uid.value)
 
@@ -124,11 +126,14 @@ function showUser(lat, lng) {
   }).addTo(map.value)
 }
 
-function locate({recenter = true} = {}) {
+/* Пошук при відкритті карти людина не просила, тож і про невдачу їй казати
+   нема чого: мітки «ти тут» просто не буде. Помилку бачить лише той, хто тиснув кнопку. */
+function locate({recenter = true, quiet = false} = {}) {
   if (!navigator.geolocation) return
 
   isLocating.value = true
   geoError.value = null
+  clearTimeout(geoErrorTimer)
 
   navigator.geolocation.getCurrentPosition(
       ({coords}) => {
@@ -148,6 +153,10 @@ function locate({recenter = true} = {}) {
       },
       (err) => {
         isLocating.value = false
+
+        if (quiet) return
+
+        geoErrorTimer = setTimeout(() => (geoError.value = null), GEO_ERROR_FOR)
         geoError.value =
             err.code === err.PERMISSION_DENIED
                 ? 'Браузер не дає нам твоє місце. Тицьни замочок біля адреси й дозволь доступ'
@@ -336,7 +345,7 @@ async function enterCity(id) {
   applyPanBounds()
   map.value.fitBounds(cityBounds.value, {animate: false})
 
-  locate({recenter: !uid.value})
+  locate({recenter: !uid.value, quiet: true})
   loadPlaces()
 }
 
@@ -469,6 +478,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   clearTimeout(moveTimer)
+  clearTimeout(geoErrorTimer)
   clearTimeout(readyTimer)
   map.value?.remove()
   map.value = null
